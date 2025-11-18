@@ -15,6 +15,10 @@
 
 /* ===== 基本設定 ===== */
 :root {
+    /* セーフエリア */
+    --safe-area-top: env(safe-area-inset-top, 0px);
+    --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+    
     /* チョコレートテーマ */
     --theme-bg: #FFF5E9;
     --theme-primary: #C19A6B;
@@ -25,6 +29,10 @@
     --theme-border: #E0D0BB;
     --theme-card: #FFFBF5;
     --theme-hover: #B8956A;
+    
+    /* セーフエリア対応 */
+    --safe-area-top: env(safe-area-inset-top);
+    --safe-area-bottom: env(safe-area-inset-bottom);
 }
 
 [data-theme="sakura"] {
@@ -81,6 +89,14 @@
     box-sizing: border-box;
 }
 
+html, body {
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+    height: 100%;
+    position: relative;
+}
+
 body {
     font-family: 'JK Maru Gothic', -apple-system, BlinkMacSystemFont, "Segoe UI", "Hiragino Sans", "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
     background-color: var(--theme-bg);
@@ -91,9 +107,8 @@ body {
     background-position: center;
     background-attachment: fixed;
     background-repeat: no-repeat;
-    position: relative;
-    padding-top: 64px; /* ヘッダーの高さ分の余白 */
-    overflow-x: hidden;
+    padding-top: calc(64px + var(--safe-area-top));
+    padding-bottom: var(--safe-area-bottom);
 }
 
 body::before {
@@ -133,6 +148,7 @@ header {
     background-color: var(--theme-primary);
     color: white;
     padding: 12px;
+    padding-top: calc(12px + var(--safe-area-top));
     position: fixed;
     top: 0;
     left: 0;
@@ -356,6 +372,69 @@ h1, h2, h3, h4, h5, h6,
     max-width: 600px;
     margin: 0 auto;
     padding: 16px 12px 20px 12px;
+}
+
+/* ===== 更新ボタン ===== */
+.refresh-button-container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 12px 16px;
+}
+
+.refresh-btn {
+    width: 100%;
+    padding: 12px 20px;
+    background: var(--theme-primary);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.refresh-btn:hover {
+    background: var(--theme-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.refresh-btn:active {
+    transform: translateY(0);
+}
+
+/* ===== 更新ボタン ===== */
+.refresh-button-container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 16px;
+    text-align: center;
+}
+
+.refresh-btn {
+    background: var(--theme-primary);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 24px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    font-family: inherit;
+}
+
+.refresh-btn:hover {
+    background: var(--theme-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.refresh-btn:active {
+    transform: translateY(0);
 }
 
 .post-item {

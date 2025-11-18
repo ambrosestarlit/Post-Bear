@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Ambrose＊Starlit">
@@ -23,9 +23,6 @@
             <div class="header-content">
                 <img src="logo.png" alt="Ambrose＊Starlit" class="app-logo">
                 <div class="header-actions">
-                    <button id="refreshBtn" class="icon-btn" title="更新する">
-                        <span style="font-size: 1.2rem;">🧸</span>
-                    </button>
                     <button id="helpBtn" class="icon-btn" title="使い方">
                         <img src="icon-help.png" alt="使い方" class="btn-icon">
                     </button>
@@ -38,6 +35,11 @@
                 </div>
             </div>
         </header>
+
+        <!-- 更新ボタン -->
+        <div class="refresh-button-container">
+            <button id="refreshBtn" class="refresh-btn">🧸 更新する</button>
+        </div>
 
         <!-- タイムライン -->
         <div id="timeline" class="timeline"></div>
