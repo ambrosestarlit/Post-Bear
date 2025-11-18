@@ -1,6 +1,16 @@
 // ===== グローバル変数 =====
 let posts = [];
 let currentFilter = null;
+let reactionsData = {}; // リアクションデータのキャッシュ
+
+// リアクションの種類
+const REACTIONS = [
+    { emoji: '👍', name: 'いいね' },
+    { emoji: '❤️', name: 'すき' },
+    { emoji: '🎉', name: 'すごい' },
+    { emoji: '😊', name: 'うれしい' },
+    { emoji: '✨', name: 'きれい' }
+];
 
 // ===== 初期化 =====
 document.addEventListener('DOMContentLoaded', () => {
@@ -60,6 +70,16 @@ function renderTimeline() {
             filterByHashtag(hashtag);
         });
     });
+    
+    // リアクションボタンイベント
+    document.querySelectorAll('.reaction-btn').forEach(btn => {
+        btn.addEventListener('click', handleReactionClick);
+    });
+    
+    // リアクション数を読み込み
+    filteredPosts.forEach(post => {
+        loadReactions(post.id);
+    });
 }
 
 // ===== 投稿HTML生成 =====
@@ -81,6 +101,21 @@ function createPostHTML(post) {
         `;
     }
     
+    // リアクションボタンHTML
+    const reactionsHTML = `
+        <div class="post-reactions">
+            ${REACTIONS.map(reaction => `
+                <button class="reaction-btn" 
+                        data-post-id="${post.id}" 
+                        data-reaction="${reaction.emoji}"
+                        title="${reaction.name}">
+                    <span class="reaction-emoji">${reaction.emoji}</span>
+                    <span class="reaction-count" id="count-${post.id}-${reaction.emoji}">0</span>
+                </button>
+            `).join('')}
+        </div>
+    `;
+    
     return `
         <div class="post-item" data-id="${post.id}">
             <img src="${post.userIcon || 'Default-icon.png'}" alt="アイコン" class="user-icon">
@@ -90,6 +125,7 @@ function createPostHTML(post) {
                 </div>
                 <div class="post-text">${textWithLinks}</div>
                 ${imagesHTML}
+                ${reactionsHTML}
             </div>
         </div>
     `;
@@ -368,4 +404,158 @@ function loadSettings() {
     const bgOpacity = localStorage.getItem('bgOpacity') !== 'false';
     document.getElementById('bgOpacityCheck').checked = bgOpacity;
     document.body.classList.toggle('bg-clear', !bgOpacity);
+}
+
+// ===== リアクション機能 =====
+
+// リアクション読み込み
+async function loadReactions(postId) {
+    try {
+        const docRef = db.collection('reactions').doc(postId);
+        const doc = await docRef.get();
+        
+        if (doc.exists) {
+            const data = doc.data();
+            reactionsData[postId] = data;
+            
+            // 各リアクションの数を表示
+            REACTIONS.forEach(reaction => {
+                const count = data[reaction.emoji] || 0;
+                const countEl = document.getElementById(`count-${postId}-${reaction.emoji}`);
+                if (countEl) {
+                    countEl.textContent = count;
+                    
+                    // 自分が押したリアクションをハイライト
+                    if (hasUserReacted(postId, reaction.emoji)) {
+                        countEl.closest('.reaction-btn').classList.add('reacted');
+                    }
+                }
+            });
+        } else {
+            // データがない場合は初期化
+            reactionsData[postId] = {};
+            REACTIONS.forEach(reaction => {
+                reactionsData[postId][reaction.emoji] = 0;
+            });
+        }
+    } catch (error) {
+        console.error('リアクション読み込みエラー:', error);
+        // エラー時はローカルデータで表示
+        REACTIONS.forEach(reaction => {
+            const countEl = document.getElementById(`count-${postId}-${reaction.emoji}`);
+            if (countEl) {
+                countEl.textContent = '0';
+            }
+        });
+    }
+}
+
+// リアクションクリック処理
+async function handleReactionClick(e) {
+    const btn = e.currentTarget;
+    const postId = btn.dataset.postId;
+    const reaction = btn.dataset.reaction;
+    
+    // スパム防止：連打防止
+    if (btn.disabled) return;
+    btn.disabled = true;
+    
+    try {
+        const hasReacted = hasUserReacted(postId, reaction);
+        
+        if (hasReacted) {
+            // リアクション取り消し
+            await removeReaction(postId, reaction);
+            btn.classList.remove('reacted');
+        } else {
+            // リアクション追加
+            await addReaction(postId, reaction);
+            btn.classList.add('reacted');
+        }
+        
+        // リアクション数を再読み込み
+        await loadReactions(postId);
+    } catch (error) {
+        console.error('リアクションエラー:', error);
+        showReactionError();
+    } finally {
+        setTimeout(() => {
+            btn.disabled = false;
+        }, 500);
+    }
+}
+
+// リアクション追加
+async function addReaction(postId, reaction) {
+    const docRef = db.collection('reactions').doc(postId);
+    
+    await db.runTransaction(async (transaction) => {
+        const doc = await transaction.get(docRef);
+        
+        let data = {};
+        if (doc.exists) {
+            data = doc.data();
+        }
+        
+        // カウントを増やす
+        data[reaction] = (data[reaction] || 0) + 1;
+        
+        transaction.set(docRef, data);
+    });
+    
+    // ローカルストレージに記録
+    saveUserReaction(postId, reaction, true);
+}
+
+// リアクション削除
+async function removeReaction(postId, reaction) {
+    const docRef = db.collection('reactions').doc(postId);
+    
+    await db.runTransaction(async (transaction) => {
+        const doc = await transaction.get(docRef);
+        
+        if (doc.exists) {
+            const data = doc.data();
+            data[reaction] = Math.max(0, (data[reaction] || 0) - 1);
+            transaction.set(docRef, data);
+        }
+    });
+    
+    // ローカルストレージから削除
+    saveUserReaction(postId, reaction, false);
+}
+
+// ユーザーがリアクション済みか確認
+function hasUserReacted(postId, reaction) {
+    const userReactions = JSON.parse(localStorage.getItem('userReactions') || '{}');
+    return userReactions[postId] && userReactions[postId][reaction];
+}
+
+// ユーザーのリアクションを記録
+function saveUserReaction(postId, reaction, reacted) {
+    const userReactions = JSON.parse(localStorage.getItem('userReactions') || '{}');
+    
+    if (!userReactions[postId]) {
+        userReactions[postId] = {};
+    }
+    
+    userReactions[postId][reaction] = reacted;
+    localStorage.setItem('userReactions', JSON.stringify(userReactions));
+}
+
+// エラー表示
+function showReactionError() {
+    const toast = document.createElement('div');
+    toast.className = 'reaction-toast';
+    toast.textContent = 'リアクションの送信に失敗しました';
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.classList.add('show');
+    }, 10);
+    
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
 }

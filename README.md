@@ -3,10 +3,18 @@
 VTuberアンブローズの進捗報告・独り言を記録するSNS風ページです。  
 GitHub APIを使って管理画面から投稿すると、自動的にGitHub Pagesに反映されます。
 
-## ✨ 特徴
+**✨ NEW！** 閲覧者がいいね・スタンプで反応できる機能を追加しました 👍❤️🎉😊✨
+
+## 🌟 特徴
 
 - 📝 **SNS風のタイムライン表示**  
   投稿はタイムライン形式で表示され、見やすく整理されます
+
+- 💖 **いいね・スタンプ機能**（NEW！）  
+  閲覧者が投稿に 👍❤️🎉😊✨ でリアクションできます  
+  - ログイン不要・匿名で反応可能
+  - リアルタイムで数が更新される
+  - 自分が押したリアクションをハイライト表示
 
 - 🏷️ **ハッシュタグによるカテゴリ分け**  
   `#タグ名` でハッシュタグをつけると、カテゴリごとに投稿を絞り込めます
@@ -20,34 +28,47 @@ GitHub APIを使って管理画面から投稿すると、自動的にGitHub Pag
 - 🎨 **カスタマイズ可能なデザイン**  
   5つのカラーテーマと背景画像を選択できます
 
-## 🚀 セットアップ
+## 🚀 セットアップ手順
 
-### 1. GitHubリポジトリの準備
+### 前提条件
+- GitHubアカウント
+- Googleアカウント（Firebase用）
+
+### ステップ1：GitHubリポジトリの準備
 
 1. GitHubに新しいリポジトリを作成
 2. GitHub Pagesを有効化（Settings → Pages → Source: main branch）
 3. このプロジェクトのファイルをアップロード
 
-### 2. Personal Access Tokenの取得
+### ステップ2：Firebase設定（いいね機能用）
 
-1. GitHub → Settings → Developer settings → Personal access tokens → Tokens (classic)
-2. "Generate new token (classic)" をクリック
-3. "repo" にチェックを入れて生成
-4. トークンをコピー（一度しか表示されません）
+**📄 詳しくは `FIREBASE_SETUP.md` を参照してください**
 
-### 3. 管理画面で設定
+簡易手順：
+1. Firebaseコンソールでプロジェクト作成
+2. Webアプリを追加して設定をコピー
+3. Firestoreデータベースを有効化
+4. `firebase-config.js` に設定を貼り付け
 
-1. `admin/index.html` にアクセス
-2. 設定画面を開く
-3. 以下を入力：
-   - **リポジトリ名**: `username/repository`
-   - **ブランチ名**: `main`（または `gh-pages`）
-   - **Personal Access Token**: 取得したトークン
-4. 「GitHub設定を保存」をクリック
+**所要時間：約10分**
+
+### ステップ3：GitHub API設定
+
+1. **Personal Access Tokenの取得**
+   - GitHub → Settings → Developer settings → Personal access tokens → Tokens (classic)
+   - "Generate new token (classic)" をクリック
+   - "repo" にチェックを入れて生成
+   - トークンをコピー
+
+2. **管理画面で設定**
+   - `admin/index.html` にアクセス
+   - 設定画面を開く
+   - リポジトリ名、ブランチ名、トークンを入力
+   - 「GitHub設定を保存」をクリック
 
 ## 📖 使い方
 
-### 投稿方法
+### 投稿する（管理者）
 
 1. **管理画面** (`admin/index.html`) にアクセス
 2. テキストボックスに投稿内容を入力
@@ -55,6 +76,18 @@ GitHub APIを使って管理画面から投稿すると、自動的にGitHub Pag
 4. 「投稿」ボタンをクリック
 
 投稿は自動的にGitHubにpushされ、数秒後に公開ページに反映されます。
+
+### いいね・スタンプを押す（閲覧者）
+
+1. 公開ページ (`index.html`) を開く
+2. 気になる投稿のスタンプボタンをクリック
+3. もう一度クリックするとリアクション取り消し
+
+**特徴：**
+- ログイン不要
+- 匿名で反応可能
+- リアルタイムで数が更新される
+- 同じブラウザから複数回押しても1回だけカウント
 
 ### ハッシュタグの使い方
 
@@ -68,12 +101,6 @@ WPFアプリの音声同期機能を実装しました。
 #開発 #WPF #進捗報告
 ```
 
-### 投稿の編集・削除
-
-- **コピー**: 📋ボタンで投稿テキストをコピー
-- **画像保存**: 💾ボタンで画像をダウンロード
-- **削除**: 🗑️ボタンで投稿を削除（GitHubにも反映）
-
 ## 📁 ファイル構成
 
 ```
@@ -82,6 +109,7 @@ Ambrose-Starlit-SNS/
 ├── viewer.js              # 公開ページ用スクリプト
 ├── style.css              # 共通スタイル
 ├── posts.json             # 投稿データ（自動生成）
+├── firebase-config.js     # Firebase設定ファイル
 ├── manifest.json          # PWA設定
 ├── logo.png               # ロゴ画像
 ├── icon-*.png             # アイコン画像
@@ -91,6 +119,7 @@ Ambrose-Starlit-SNS/
 │   ├── index.html         # 管理画面
 │   ├── admin.js           # 管理画面用スクリプト
 │   └── admin-style.css    # 管理画面用追加スタイル
+├── FIREBASE_SETUP.md      # Firebase設定手順書
 └── README.md              # このファイル
 ```
 
@@ -109,44 +138,67 @@ Ambrose-Starlit-SNS/
 
 プリセット背景またはカスタム画像を設定できます。
 
-### アイコン
+### スタンプの種類
 
-管理画面の設定から、プロフィールアイコンを変更できます。
+現在のスタンプ：
+- 👍 いいね
+- ❤️ すき
+- 🎉 すごい
+- 😊 うれしい
+- ✨ きれい
+
+スタンプを変更したい場合は、`viewer.js` と `admin/admin.js` の `REACTIONS` 配列を編集してください。
 
 ## 🔒 セキュリティ注意事項
 
-- Personal Access TokenはブラウザのlocalStorageに保存されます
+### Personal Access Token
+- トークンはブラウザのlocalStorageに保存されます
 - 他の人と共有するPCでは使用しないでください
 - トークンが漏洩した場合は、GitHubで即座に削除してください
 
-## 📝 ライセンス
+### Firebase設定
+- `firebase-config.js` はGitHubに公開されても問題ありません
+- Firestoreのセキュリティルールで書き込みを制御しています
+- スパム対策として、localStorageで二重投稿を防止しています
 
-このプロジェクトは、元となった[Memonto](https://github.com/your-repo)のデザインをベースに、GitHub API連携機能を追加したものです。
+## 💰 料金について
+
+### Firebase（無料枠）
+- 読み取り：50,000回/日
+- 書き込み：20,000回/日
+- ストレージ：1GB
+
+通常使用では無料枠を超えることはありません。
+
+### GitHub
+- Public リポジトリは無料
+- GitHub Pages も無料
 
 ## 🛠️ トラブルシューティング
 
-### 投稿が反映されない
+### いいねボタンが表示されない
+→ `firebase-config.js` の設定が正しいか確認してください
 
-1. GitHub設定が正しいか確認
-2. Personal Access Tokenの権限（"repo"）を確認
-3. ブラウザのコンソールでエラーを確認
+### いいねを押してもカウントされない
+→ ブラウザのコンソールを開いてエラーを確認  
+→ Firestoreのセキュリティルールを確認（`FIREBASE_SETUP.md` 参照）
+
+### 投稿が反映されない
+→ GitHub設定が正しいか確認  
+→ Personal Access Tokenの権限（"repo"）を確認  
+→ ブラウザのコンソールでエラーを確認
 
 ### GitHubへのpushが失敗する
-
-1. リポジトリ名が正しいか確認（`username/repository`形式）
-2. ブランチ名が正しいか確認
-3. トークンの有効期限を確認
-
-### 画像が表示されない
-
-- 画像はBase64形式で保存されるため、大量の画像を投稿するとファイルサイズが大きくなります
-- GitHubの1ファイル100MB制限に注意してください
+→ リポジトリ名が正しいか確認（`username/repository`形式）  
+→ ブランチ名が正しいか確認  
+→ トークンの有効期限を確認
 
 ## 💡 Tips
 
 - スマホのホーム画面に追加すると、アプリのように使えます
 - ハッシュタグ検索で過去の投稿を簡単に見つけられます
 - 定期的に`posts.json`をバックアップすることをおすすめします
+- いいね数は管理画面でも確認できます
 
 ## 📧 お問い合わせ
 
@@ -154,4 +206,5 @@ Ambrose-Starlit-SNS/
 
 ---
 
-**Ambrose＊Starlit** - VTuberアンブローズの進捗記録ページ
+**Ambrose＊Starlit** - VTuberアンブローズの進捗記録ページ  
+Made with ❤️ using Firebase & GitHub Pages
