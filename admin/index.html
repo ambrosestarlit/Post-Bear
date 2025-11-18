@@ -24,9 +24,6 @@
             <div class="header-content">
                 <img src="../logo.png" alt="Ambrose＊Starlit" class="app-logo">
                 <div class="header-actions">
-                    <button id="refreshBtn" class="icon-btn" title="更新する">
-                        <span style="font-size: 1.2rem;">🧸</span>
-                    </button>
                     <button id="viewPublicBtn" class="icon-btn" title="公開ページを見る">
                         <span style="font-size: 1.2rem;">👁️</span>
                     </button>
@@ -45,6 +42,12 @@
 
         <!-- GitHub認証状態 -->
         <div id="authStatus" class="auth-status"></div>
+
+        <!-- 更新・保存ボタン -->
+        <div class="action-buttons-container">
+            <button id="refreshBtn" class="action-btn refresh-btn">🧸 更新する</button>
+            <button id="saveChangesBtn" class="action-btn save-btn">💾 変更を保存</button>
+        </div>
 
         <!-- 投稿フォーム -->
         <div class="post-form-container">

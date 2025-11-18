@@ -1,5 +1,68 @@
 /* ===== 管理画面追加スタイル ===== */
 
+/* 更新・保存ボタンコンテナ */
+.action-buttons-container {
+    max-width: 600px;
+    margin: 16px auto;
+    padding: 0 16px;
+    display: flex;
+    gap: 12px;
+}
+
+.action-btn {
+    flex: 1;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 24px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    font-family: inherit;
+}
+
+.refresh-btn {
+    background: var(--theme-secondary);
+    color: white;
+}
+
+.refresh-btn:hover {
+    background: var(--theme-primary);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.save-btn {
+    background: var(--theme-primary);
+    color: white;
+}
+
+.save-btn:hover {
+    background: var(--theme-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.save-btn.has-changes {
+    background: #ff9800;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15); }
+    50% { box-shadow: 0 4px 16px rgba(255, 152, 0, 0.4); }
+}
+
+.action-btn:active {
+    transform: translateY(0);
+}
+
+.action-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
 /* タイムライン余白調整 */
 #timeline {
     padding-top: 16px;

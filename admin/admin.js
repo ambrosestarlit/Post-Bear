@@ -237,9 +237,6 @@ async function createPost() {
     postBtn.textContent = '投稿中...';
     
     try {
-        // 投稿前に必ずGitHubから最新データを取得
-        await syncWithGithub();
-        
         // ハッシュタグ抽出
         const hashtags = extractHashtags(text);
         
@@ -259,31 +256,21 @@ async function createPost() {
         // ローカルに保存
         saveLocalPosts();
         
-        // GitHubにpush
-        const success = await pushToGithub();
+        showMessage('投稿しました（まだ保存されていません）', 'success');
         
-        if (success) {
-            showMessage('投稿しました！', 'success');
-            
-            // フォームリセット
-            document.getElementById('postText').value = '';
-            selectedImages = [];
-            document.getElementById('imagePreview').innerHTML = '';
-            
-            // タイムライン更新
-            renderTimeline();
-            updateHashtagList();
-        } else {
-            // push失敗した場合は投稿を取り消し
-            posts.shift();
-            saveLocalPosts();
-            renderTimeline();
-        }
+        // フォームリセット
+        document.getElementById('postText').value = '';
+        selectedImages = [];
+        document.getElementById('imagePreview').innerHTML = '';
+        
+        // タイムライン更新
+        renderTimeline();
+        updateHashtagList();
+        
+        // 未保存の変更があることを表示
+        showUnsavedChanges();
     } catch (error) {
         showMessage('投稿に失敗しました: ' + error.message, 'error');
-        posts.shift();
-        saveLocalPosts();
-        renderTimeline();
     } finally {
         postBtn.disabled = false;
         postBtn.textContent = '投稿';
@@ -291,7 +278,7 @@ async function createPost() {
 }
 
 // ===== 投稿削除 =====
-async function deletePost(postId) {
+function deletePost(postId) {
     if (!confirm('この投稿を削除しますか？')) {
         return;
     }
@@ -299,22 +286,19 @@ async function deletePost(postId) {
     const index = posts.findIndex(p => p.id === postId);
     if (index === -1) return;
     
-    // 投稿を削除
+    // 投稿を削除（ローカルのみ）
     posts.splice(index, 1);
     
     // ローカルに保存
     saveLocalPosts();
     
-    // GitHubにpush
-    const success = await pushToGithub();
+    // タイムライン更新
+    renderTimeline();
+    updateHashtagList();
     
-    if (success) {
-        showMessage('投稿を削除しました', 'success');
-        renderTimeline();
-        updateHashtagList();
-    } else {
-        showMessage('削除に失敗しました', 'error');
-    }
+    // 未保存の変更があることを表示
+    showUnsavedChanges();
+    showMessage('削除しました（まだ保存されていません）', 'success');
 }
 
 // ===== ハッシュタグ抽出 =====
@@ -635,6 +619,9 @@ function setupEventListeners() {
         showMessage('更新しました', 'success');
     });
     
+    // 変更を保存ボタン
+    document.getElementById('saveChangesBtn').addEventListener('click', saveChanges);
+    
     // 公開ページを見る
     document.getElementById('viewPublicBtn').addEventListener('click', () => {
         window.open('../index.html', '_blank');
@@ -876,13 +863,11 @@ async function updateAllPostIcons(newIconData) {
         // ローカルに保存
         saveLocalPosts();
         
-        // GitHubにpush
-        const success = await pushToGithub();
+        // タイムライン更新
+        renderTimeline();
         
-        if (success) {
-            // タイムライン更新
-            renderTimeline();
-        }
+        // 未保存の変更があることを表示
+        showUnsavedChanges();
     }
 }
 
@@ -975,6 +960,64 @@ function loadSettings() {
     const bgOpacity = localStorage.getItem('bgOpacity') !== 'false';
     document.getElementById('bgOpacityCheck').checked = bgOpacity;
     document.body.classList.toggle('bg-clear', !bgOpacity);
+}
+
+// ===== 未保存の変更表示 =====
+let hasUnsavedChanges = false;
+
+function showUnsavedChanges() {
+    hasUnsavedChanges = true;
+    updateSaveButton();
+}
+
+function clearUnsavedChanges() {
+    hasUnsavedChanges = false;
+    updateSaveButton();
+}
+
+function updateSaveButton() {
+    const saveBtn = document.getElementById('saveChangesBtn');
+    if (saveBtn) {
+        if (hasUnsavedChanges) {
+            saveBtn.classList.add('has-changes');
+            saveBtn.textContent = '💾 変更を保存 (未保存)';
+        } else {
+            saveBtn.classList.remove('has-changes');
+            saveBtn.textContent = '💾 変更を保存';
+        }
+    }
+}
+
+// ===== 変更を保存（GitHubにpush） =====
+async function saveChanges() {
+    if (!hasUnsavedChanges) {
+        showMessage('保存する変更がありません', 'success');
+        return;
+    }
+    
+    const saveBtn = document.getElementById('saveChangesBtn');
+    saveBtn.disabled = true;
+    saveBtn.textContent = '保存中...';
+    
+    try {
+        // GitHubから最新データを取得
+        await syncWithGithub();
+        
+        // GitHubにpush
+        const success = await pushToGithub();
+        
+        if (success) {
+            showMessage('変更を保存しました！', 'success');
+            clearUnsavedChanges();
+        } else {
+            showMessage('保存に失敗しました', 'error');
+        }
+    } catch (error) {
+        showMessage('保存エラー: ' + error.message, 'error');
+    } finally {
+        saveBtn.disabled = false;
+        updateSaveButton();
+    }
 }
 
 // ===== リアクション読み込み（管理画面用・表示のみ） =====
