@@ -3,6 +3,7 @@ let posts = [];
 let currentFilter = null;
 let selectedImages = [];
 let reactionsData = {}; // リアクションデータのキャッシュ
+let currentSha = null; // GitHubのSHA管理
 let githubConfig = {
     repo: '',
     branch: 'main',
@@ -101,6 +102,8 @@ async function checkGithubConnection() {
 }
 
 // ===== GitHubと同期 =====
+let currentSha = null; // 現在のSHAを保持
+
 async function syncWithGithub() {
     try {
         const response = await fetch(`https://api.github.com/repos/${githubConfig.repo}/contents/posts.json?ref=${githubConfig.branch}`, {
@@ -112,7 +115,19 @@ async function syncWithGithub() {
         
         if (response.ok) {
             const data = await response.json();
-            const content = JSON.parse(atob(data.content));
+            currentSha = data.sha; // SHAを保存
+            
+            // Base64デコード（UTF-8対応）
+            const base64Content = data.content.replace(/\n/g, '');
+            const binaryString = atob(base64Content);
+            const bytes = new Uint8Array(binaryString.length);
+            for (let i = 0; i < binaryString.length; i++) {
+                bytes[i] = binaryString.charCodeAt(i);
+            }
+            const decoder = new TextDecoder('utf-8');
+            const jsonString = decoder.decode(bytes);
+            const content = JSON.parse(jsonString);
+            
             posts = content.posts || [];
             saveLocalPosts();
             renderTimeline();
@@ -120,6 +135,7 @@ async function syncWithGithub() {
         } else {
             // posts.jsonが存在しない場合は新規作成
             posts = [];
+            currentSha = null;
             renderTimeline();
         }
     } catch (error) {
@@ -151,8 +167,7 @@ async function pushToGithub() {
     }
     
     try {
-        // 既存のposts.jsonを取得
-        let sha = null;
+        // 最新のSHAを取得（投稿直前に再取得）
         const getResponse = await fetch(`https://api.github.com/repos/${githubConfig.repo}/contents/posts.json?ref=${githubConfig.branch}`, {
             headers: {
                 'Authorization': `token ${githubConfig.token}`,
@@ -160,13 +175,23 @@ async function pushToGithub() {
             }
         });
         
+        let sha = null;
         if (getResponse.ok) {
             const data = await getResponse.json();
             sha = data.sha;
         }
         
-        // posts.jsonを更新
-        const content = btoa(unescape(encodeURIComponent(JSON.stringify({ posts }, null, 2))));
+        // JSONをUTF-8でエンコード
+        const jsonString = JSON.stringify({ posts }, null, 2);
+        const encoder = new TextEncoder();
+        const utf8Bytes = encoder.encode(jsonString);
+        
+        // Uint8ArrayをBase64に変換
+        let binaryString = '';
+        for (let i = 0; i < utf8Bytes.length; i++) {
+            binaryString += String.fromCharCode(utf8Bytes[i]);
+        }
+        const content = btoa(binaryString);
         
         const putResponse = await fetch(`https://api.github.com/repos/${githubConfig.repo}/contents/posts.json`, {
             method: 'PUT',
@@ -184,6 +209,8 @@ async function pushToGithub() {
         });
         
         if (putResponse.ok) {
+            const result = await putResponse.json();
+            currentSha = result.content.sha; // 新しいSHAを保存
             return true;
         } else {
             const error = await putResponse.json();
@@ -210,6 +237,9 @@ async function createPost() {
     postBtn.textContent = '投稿中...';
     
     try {
+        // 投稿前に必ずGitHubから最新データを取得
+        await syncWithGithub();
+        
         // ハッシュタグ抽出
         const hashtags = extractHashtags(text);
         
@@ -599,6 +629,12 @@ function showMessage(message, type) {
 
 // ===== イベントリスナー設定 =====
 function setupEventListeners() {
+    // 更新ボタン
+    document.getElementById('refreshBtn').addEventListener('click', async () => {
+        await syncWithGithub();
+        showMessage('更新しました', 'success');
+    });
+    
     // 公開ページを見る
     document.getElementById('viewPublicBtn').addEventListener('click', () => {
         window.open('../index.html', '_blank');

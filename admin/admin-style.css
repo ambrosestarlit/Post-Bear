@@ -1,5 +1,16 @@
 /* ===== 管理画面追加スタイル ===== */
 
+/* タイムライン余白調整 */
+#timeline {
+    padding-top: 16px;
+    padding-bottom: 20px;
+}
+
+/* 投稿フォーム余白調整 */
+.post-form-container {
+    margin-top: 16px;
+}
+
 /* 認証状態バー */
 .auth-status {
     max-width: 600px;
@@ -142,9 +153,9 @@
 
 /* リアクション表示（管理画面用） */
 .post-reactions-admin {
-    display: flex;
-    gap: 12px;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
     margin-top: 12px;
     padding-top: 12px;
     border-top: 1px solid var(--theme-border);
@@ -153,12 +164,13 @@
 .reaction-display {
     display: inline-flex;
     align-items: center;
-    gap: 4px;
-    padding: 4px 10px;
+    gap: 6px;
+    padding: 6px 10px;
     background: var(--theme-accent);
-    border-radius: 16px;
-    font-size: 0.85rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
     transition: opacity 0.3s;
+    justify-content: center;
 }
 
 .reaction-display .reaction-emoji {
@@ -166,8 +178,8 @@
 }
 
 .reaction-display .reaction-emoji-img {
-    width: 24px;
-    height: 24px;
+    width: 32px;
+    height: 32px;
     object-fit: contain;
 }
 
