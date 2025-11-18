@@ -139,3 +139,35 @@
 .preview-remove:hover {
     background: rgba(220, 53, 69, 0.9);
 }
+
+/* リアクション表示（管理画面用） */
+.post-reactions-admin {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--theme-border);
+}
+
+.reaction-display {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    background: var(--theme-accent);
+    border-radius: 16px;
+    font-size: 0.85rem;
+    transition: opacity 0.3s;
+}
+
+.reaction-display .reaction-emoji {
+    font-size: 1rem;
+}
+
+.reaction-display .reaction-count {
+    color: var(--theme-text);
+    font-weight: 500;
+    min-width: 16px;
+    text-align: center;
+}

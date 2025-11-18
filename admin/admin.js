@@ -2,11 +2,21 @@
 let posts = [];
 let currentFilter = null;
 let selectedImages = [];
+let reactionsData = {}; // リアクションデータのキャッシュ
 let githubConfig = {
     repo: '',
     branch: 'main',
     token: ''
 };
+
+// リアクションの種類
+const REACTIONS = [
+    { emoji: '👍', name: 'いいね' },
+    { emoji: '❤️', name: 'すき' },
+    { emoji: '🎉', name: 'すごい' },
+    { emoji: '😊', name: 'うれしい' },
+    { emoji: '✨', name: 'きれい' }
+];
 
 // トリミング関連
 let cropImage = null;
@@ -349,6 +359,11 @@ function renderTimeline() {
             filterByHashtag(hashtag);
         });
     });
+    
+    // リアクション数を読み込み
+    filteredPosts.forEach(post => {
+        loadReactions(post.id);
+    });
 }
 
 // ===== 投稿HTML生成 =====
@@ -370,6 +385,18 @@ function createPostHTML(post) {
         `;
     }
     
+    // リアクション表示（管理画面では閲覧のみ）
+    const reactionsHTML = `
+        <div class="post-reactions-admin">
+            ${REACTIONS.map(reaction => `
+                <span class="reaction-display" id="count-${post.id}-${reaction.emoji}">
+                    <span class="reaction-emoji">${reaction.emoji}</span>
+                    <span class="reaction-count">0</span>
+                </span>
+            `).join('')}
+        </div>
+    `;
+    
     return `
         <div class="post-item" data-id="${post.id}">
             <img src="${post.userIcon || '../Default-icon.png'}" alt="アイコン" class="user-icon">
@@ -379,6 +406,7 @@ function createPostHTML(post) {
                 </div>
                 <div class="post-text">${textWithLinks}</div>
                 ${imagesHTML}
+                ${reactionsHTML}
                 <div class="post-actions">
                     <button class="action-btn-icon" onclick="copyPostText('${post.id}')" title="コピー">
                         <img src="../icon-copy.png" alt="コピー">
@@ -888,4 +916,40 @@ function loadSettings() {
     const bgOpacity = localStorage.getItem('bgOpacity') !== 'false';
     document.getElementById('bgOpacityCheck').checked = bgOpacity;
     document.body.classList.toggle('bg-clear', !bgOpacity);
+}
+
+// ===== リアクション読み込み（管理画面用・表示のみ） =====
+async function loadReactions(postId) {
+    try {
+        const docRef = db.collection('reactions').doc(postId);
+        const doc = await docRef.get();
+        
+        if (doc.exists) {
+            const data = doc.data();
+            
+            // 各リアクションの数を表示
+            REACTIONS.forEach(reaction => {
+                const count = data[reaction.emoji] || 0;
+                const countEl = document.getElementById(`count-${postId}-${reaction.emoji}`);
+                if (countEl) {
+                    const countSpan = countEl.querySelector('.reaction-count');
+                    if (countSpan) {
+                        countSpan.textContent = count;
+                        // 0の場合は薄く表示
+                        countEl.style.opacity = count > 0 ? '1' : '0.3';
+                    }
+                }
+            });
+        } else {
+            // データがない場合は0表示
+            REACTIONS.forEach(reaction => {
+                const countEl = document.getElementById(`count-${postId}-${reaction.emoji}`);
+                if (countEl) {
+                    countEl.style.opacity = '0.3';
+                }
+            });
+        }
+    } catch (error) {
+        console.error('リアクション読み込みエラー:', error);
+    }
 }
