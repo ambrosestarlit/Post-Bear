@@ -31,11 +31,18 @@ let isCropping = false;
 
 // ===== 初期化 =====
 document.addEventListener('DOMContentLoaded', () => {
-    loadGithubConfig();
-    loadSettings();
-    loadLocalPosts();
-    setupEventListeners();
-    checkGithubConnection();
+    try {
+        console.log('管理画面初期化開始');
+        loadGithubConfig();
+        loadSettings();
+        loadLocalPosts();
+        setupEventListeners();
+        checkGithubConnection();
+        console.log('管理画面初期化完了');
+    } catch (error) {
+        console.error('初期化エラー:', error);
+        alert('初期化エラー: ' + error.message);
+    }
 });
 
 // ===== GitHub設定読み込み =====
@@ -102,8 +109,6 @@ async function checkGithubConnection() {
 }
 
 // ===== GitHubと同期 =====
-let currentSha = null; // 現在のSHAを保持
-
 async function syncWithGithub() {
     try {
         const response = await fetch(`https://api.github.com/repos/${githubConfig.repo}/contents/posts.json?ref=${githubConfig.branch}`, {
@@ -613,49 +618,111 @@ function showMessage(message, type) {
 
 // ===== イベントリスナー設定 =====
 function setupEventListeners() {
+    console.log('イベントリスナー設定開始');
+    
     // 更新ボタン
-    document.getElementById('refreshBtn').addEventListener('click', async () => {
-        await syncWithGithub();
-        showMessage('更新しました', 'success');
-    });
+    const refreshBtn = document.getElementById('refreshBtn');
+    if (refreshBtn) {
+        refreshBtn.addEventListener('click', async () => {
+            console.log('更新ボタンクリック');
+            try {
+                await syncWithGithub();
+                showMessage('更新しました', 'success');
+            } catch (error) {
+                console.error('更新エラー:', error);
+                showMessage('更新エラー: ' + error.message, 'error');
+            }
+        });
+        console.log('更新ボタン: OK');
+    } else {
+        console.error('refreshBtn が見つかりません');
+    }
     
     // 変更を保存ボタン
-    document.getElementById('saveChangesBtn').addEventListener('click', saveChanges);
+    const saveChangesBtn = document.getElementById('saveChangesBtn');
+    if (saveChangesBtn) {
+        saveChangesBtn.addEventListener('click', () => {
+            console.log('変更を保存ボタンクリック');
+            saveChanges();
+        });
+        console.log('保存ボタン: OK');
+    } else {
+        console.error('saveChangesBtn が見つかりません');
+    }
     
     // 公開ページを見る
-    document.getElementById('viewPublicBtn').addEventListener('click', () => {
-        window.open('../index.html', '_blank');
-    });
+    const viewPublicBtn = document.getElementById('viewPublicBtn');
+    if (viewPublicBtn) {
+        viewPublicBtn.addEventListener('click', () => {
+            console.log('公開ページボタンクリック');
+            window.open('../index.html', '_blank');
+        });
+        console.log('公開ページボタン: OK');
+    } else {
+        console.error('viewPublicBtn が見つかりません');
+    }
     
     // 投稿ボタン
-    document.getElementById('postBtn').addEventListener('click', createPost);
+    const postBtn = document.getElementById('postBtn');
+    if (postBtn) {
+        postBtn.addEventListener('click', () => {
+            console.log('投稿ボタンクリック');
+            createPost();
+        });
+        console.log('投稿ボタン: OK');
+    } else {
+        console.error('postBtn が見つかりません');
+    }
     
     // 画像選択
-    document.getElementById('imageInput').addEventListener('change', handleImageSelect);
+    const imageInput = document.getElementById('imageInput');
+    if (imageInput) {
+        imageInput.addEventListener('change', handleImageSelect);
+        console.log('画像選択: OK');
+    }
     
     // GitHub設定保存
-    document.getElementById('saveGithubBtn').addEventListener('click', saveGithubConfig);
+    const saveGithubBtn = document.getElementById('saveGithubBtn');
+    if (saveGithubBtn) {
+        saveGithubBtn.addEventListener('click', () => {
+            console.log('GitHub設定保存ボタンクリック');
+            saveGithubConfig();
+        });
+        console.log('GitHub設定保存ボタン: OK');
+    }
     
     // ヘルプボタン
-    document.getElementById('helpBtn').addEventListener('click', () => {
-        openModal('helpModal');
-    });
+    const helpBtn = document.getElementById('helpBtn');
+    if (helpBtn) {
+        helpBtn.addEventListener('click', () => {
+            console.log('ヘルプボタンクリック');
+            openModal('helpModal');
+        });
+        console.log('ヘルプボタン: OK');
+    }
     
     // 検索ボタン
-    document.getElementById('searchBtn').addEventListener('click', () => {
-        openModal('searchModal');
-    });
+    const searchBtn = document.getElementById('searchBtn');
+    if (searchBtn) {
+        searchBtn.addEventListener('click', () => {
+            console.log('検索ボタンクリック');
+            openModal('searchModal');
+        });
+        console.log('検索ボタン: OK');
+    }
     
     // 設定ボタン
-    document.getElementById('settingsBtn').addEventListener('click', () => {
-        openModal('settingsModal');
-    });
+    const settingsBtn = document.getElementById('settingsBtn');
+    if (settingsBtn) {
+        settingsBtn.addEventListener('click', () => {
+            console.log('設定ボタンクリック');
+            openModal('settingsModal');
+        });
+        console.log('設定ボタン: OK');
+    }
     
-    // フィルタークリア
-    document.getElementById('clearFilterBtn').addEventListener('click', () => {
-        clearFilter();
-        closeModal('searchModal');
-    });
+    console.log('イベントリスナー設定完了');
+}
     
     // ハッシュタグ検索
     document.getElementById('hashtagSearch').addEventListener('input', (e) => {
