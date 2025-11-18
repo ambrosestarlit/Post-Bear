@@ -2,11 +2,23 @@
 let posts = [];
 let currentFilter = null;
 let selectedImages = [];
+let reactionsData = {}; // リアクションデータのキャッシュ
 let githubConfig = {
     repo: '',
     branch: 'main',
     token: ''
 };
+
+// リアクションの種類
+const REACTIONS = [
+    { emoji: 'iine', name: 'いいね', image: '../stamps/iine.png' },
+    { emoji: 'suki', name: 'すき', image: '../stamps/suki.png' },
+    { emoji: 'omedetou', name: 'おめでと', image: '../stamps/omedetou.png' },
+    { emoji: 'gannbare', name: 'がんば', image: '../stamps/gannbare.png' },
+    { emoji: 'otukare', name: 'おつかれ', image: '../stamps/otukare.png' },
+    { emoji: 'kitai', name: '期待', image: '../stamps/kitai.png' },
+    { emoji: 'wakaru', name: 'わかる', image: '../stamps/wakaru.png' }
+];
 
 // トリミング関連
 let cropImage = null;
@@ -100,7 +112,8 @@ async function syncWithGithub() {
         
         if (response.ok) {
             const data = await response.json();
-            const content = JSON.parse(atob(data.content));
+            const contentDecoded = decodeURIComponent(escape(atob(data.content)));
+            const content = JSON.parse(contentDecoded);
             posts = content.posts || [];
             saveLocalPosts();
             renderTimeline();
@@ -154,7 +167,8 @@ async function pushToGithub() {
         }
         
         // posts.jsonを更新
-        const content = btoa(unescape(encodeURIComponent(JSON.stringify({ posts }, null, 2))));
+        const jsonString = JSON.stringify({ posts }, null, 2);
+        const content = btoa(unescape(encodeURIComponent(jsonString)));
         
         const putResponse = await fetch(`https://api.github.com/repos/${githubConfig.repo}/contents/posts.json`, {
             method: 'PUT',
@@ -349,6 +363,11 @@ function renderTimeline() {
             filterByHashtag(hashtag);
         });
     });
+    
+    // リアクション数を読み込み
+    filteredPosts.forEach(post => {
+        loadReactions(post.id);
+    });
 }
 
 // ===== 投稿HTML生成 =====
@@ -370,6 +389,21 @@ function createPostHTML(post) {
         `;
     }
     
+    // リアクション表示（管理画面では閲覧のみ）
+    const reactionsHTML = `
+        <div class="post-reactions-admin">
+            ${REACTIONS.map(reaction => `
+                <span class="reaction-display" id="count-${post.id}-${reaction.emoji}">
+                    ${reaction.image 
+                        ? `<img src="${reaction.image}" class="reaction-emoji-img" alt="${reaction.name}">` 
+                        : `<span class="reaction-emoji">${reaction.emoji}</span>`
+                    }
+                    <span class="reaction-count">0</span>
+                </span>
+            `).join('')}
+        </div>
+    `;
+    
     return `
         <div class="post-item" data-id="${post.id}">
             <img src="${post.userIcon || '../Default-icon.png'}" alt="アイコン" class="user-icon">
@@ -379,6 +413,7 @@ function createPostHTML(post) {
                 </div>
                 <div class="post-text">${textWithLinks}</div>
                 ${imagesHTML}
+                ${reactionsHTML}
                 <div class="post-actions">
                     <button class="action-btn-icon" onclick="copyPostText('${post.id}')" title="コピー">
                         <img src="../icon-copy.png" alt="コピー">
@@ -573,14 +608,6 @@ function setupEventListeners() {
     
     // 投稿ボタン
     document.getElementById('postBtn').addEventListener('click', createPost);
-    
-    // Enter キーで投稿（Shift+Enterで改行）
-    document.getElementById('postText').addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            createPost();
-        }
-    });
     
     // 画像選択
     document.getElementById('imageInput').addEventListener('change', handleImageSelect);
@@ -795,8 +822,34 @@ function confirmCrop() {
     
     document.getElementById('currentUserIcon').src = iconData;
     
+    // 既存の全投稿のアイコンを更新
+    updateAllPostIcons(iconData);
+    
     cancelCrop();
     showMessage('アイコンを変更しました', 'success');
+}
+
+// 全投稿のアイコンを更新
+async function updateAllPostIcons(newIconData) {
+    let updated = false;
+    
+    posts.forEach(post => {
+        post.userIcon = newIconData;
+        updated = true;
+    });
+    
+    if (updated) {
+        // ローカルに保存
+        saveLocalPosts();
+        
+        // GitHubにpush
+        const success = await pushToGithub();
+        
+        if (success) {
+            // タイムライン更新
+            renderTimeline();
+        }
+    }
 }
 
 function cancelCrop() {
@@ -888,4 +941,40 @@ function loadSettings() {
     const bgOpacity = localStorage.getItem('bgOpacity') !== 'false';
     document.getElementById('bgOpacityCheck').checked = bgOpacity;
     document.body.classList.toggle('bg-clear', !bgOpacity);
+}
+
+// ===== リアクション読み込み（管理画面用・表示のみ） =====
+async function loadReactions(postId) {
+    try {
+        const docRef = db.collection('reactions').doc(postId);
+        const doc = await docRef.get();
+        
+        if (doc.exists) {
+            const data = doc.data();
+            
+            // 各リアクションの数を表示
+            REACTIONS.forEach(reaction => {
+                const count = data[reaction.emoji] || 0;
+                const countEl = document.getElementById(`count-${postId}-${reaction.emoji}`);
+                if (countEl) {
+                    const countSpan = countEl.querySelector('.reaction-count');
+                    if (countSpan) {
+                        countSpan.textContent = count;
+                        // 0の場合は薄く表示
+                        countEl.style.opacity = count > 0 ? '1' : '0.3';
+                    }
+                }
+            });
+        } else {
+            // データがない場合は0表示
+            REACTIONS.forEach(reaction => {
+                const countEl = document.getElementById(`count-${postId}-${reaction.emoji}`);
+                if (countEl) {
+                    countEl.style.opacity = '0.3';
+                }
+            });
+        }
+    } catch (error) {
+        console.error('リアクション読み込みエラー:', error);
+    }
 }
