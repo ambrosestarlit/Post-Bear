@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Ambrose＊Starlit Admin">
+    <title>Ambrose＊Starlit - 管理画面</title>
+    <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="admin-style.css">
+    <link rel="manifest" href="../manifest.json">
+    <link rel="apple-touch-icon" href="../icon-192.png">
+</head>
+<body>
+    <div id="app">
+        <!-- ヘッダー -->
+        <header>
+            <div class="header-content">
+                <img src="../logo.png" alt="Ambrose＊Starlit" class="app-logo">
+                <div class="header-actions">
+                    <button id="viewPublicBtn" class="icon-btn" title="公開ページを見る">
+                        <span style="font-size: 1.2rem;">👁️</span>
+                    </button>
+                    <button id="helpBtn" class="icon-btn" title="使い方">
+                        <img src="../icon-help.png" alt="使い方" class="btn-icon">
+                    </button>
+                    <button id="searchBtn" class="icon-btn" title="検索">
+                        <img src="../icon-search.png" alt="検索" class="btn-icon">
+                    </button>
+                    <button id="settingsBtn" class="icon-btn" title="設定">
+                        <img src="../icon-settings.png" alt="設定" class="btn-icon">
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- GitHub認証状態 -->
+        <div id="authStatus" class="auth-status"></div>
+
+        <!-- 投稿フォーム -->
+        <div class="post-form-container">
+            <div class="user-icon-area">
+                <img id="currentUserIcon" src="" alt="アイコン" class="user-icon">
+            </div>
+            <div class="post-input-area">
+                <textarea id="postText" placeholder="なにをつぶやく？" rows="3"></textarea>
+                <div class="post-actions">
+                    <input type="file" id="imageInput" accept="image/*" multiple style="display: none;">
+                    <label for="imageInput" class="btn-icon-only" title="画像を追加">
+                        <img src="../icon-camera.png" alt="画像">
+                    </label>
+                    <button id="postBtn" class="btn-primary">投稿</button>
+                </div>
+                <div id="imagePreview" class="image-preview"></div>
+            </div>
+        </div>
+
+        <!-- タイムライン -->
+        <div id="timeline" class="timeline"></div>
+
+        <!-- 検索モーダル -->
+        <div id="searchModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2><img src="../icon-search.png" alt="" class="modal-title-icon"> ハッシュタグ検索</h2>
+                    <button class="close-btn">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <input type="text" id="hashtagSearch" placeholder="#タグを検索..." class="search-input">
+                    <button id="clearFilterBtn" class="btn-secondary full-width">すべて表示</button>
+                    <div id="hashtagList" class="hashtag-list"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 使い方モーダル -->
+        <div id="helpModal" class="modal">
+            <div class="modal-content modal-help">
+                <div class="modal-header">
+                    <h2><img src="../icon-help.png" alt="" class="modal-title-icon"> 使い方ガイド</h2>
+                    <button class="close-btn">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="help-section">
+                        <div class="help-welcome">
+                            <img src="../logo.png" alt="Ambrose＊Starlit" class="help-welcome-icon">
+                            <h3>Ambrose＊Starlit 管理画面</h3>
+                        </div>
+                        <p>GitHub APIを使って投稿を自動でGitHub Pagesに公開します。</p>
+                    </div>
+
+                    <div class="help-section">
+                        <h3>🔧 初回セットアップ</h3>
+                        <div class="help-item">
+                            <div class="help-text">
+                                <strong>1. GitHubリポジトリの準備</strong>
+                                <p>• GitHub Pagesが有効なリポジトリを用意<br>
+                                • このアプリのファイルをアップロード</p>
+                            </div>
+                        </div>
+                        <div class="help-item">
+                            <div class="help-text">
+                                <strong>2. Personal Access Token取得</strong>
+                                <p>• GitHub → Settings → Developer settings → Personal access tokens → Tokens (classic)<br>
+                                • "Generate new token (classic)"をクリック<br>
+                                • "repo"にチェックを入れる<br>
+                                • トークンをコピー</p>
+                            </div>
+                        </div>
+                        <div class="help-item">
+                            <div class="help-text">
+                                <strong>3. 設定画面で入力</strong>
+                                <p>• リポジトリ名: "username/repository"<br>
+                                • ブランチ名: "main"または"gh-pages"<br>
+                                • Personal Access Token: 取得したトークン</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="help-section">
+                        <h3>✏️ 投稿方法</h3>
+                        <div class="help-item">
+                            <div class="help-icon">
+                                <img src="../icon-camera.png" alt="画像">
+                            </div>
+                            <div class="help-text">
+                                <strong>画像ボタン</strong>
+                                <p>写真や画像を追加できます。複数枚同時に選択可能です。</p>
+                            </div>
+                        </div>
+                        <div class="help-item">
+                            <button class="btn-primary" disabled>投稿</button>
+                            <div class="help-text">
+                                <strong>投稿ボタン</strong>
+                                <p>テキストや画像を投稿します。自動的にGitHubにpushされます。</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="help-section">
+                        <h3>📝 投稿の操作</h3>
+                        <div class="help-item">
+                            <div class="help-icon">
+                                <img src="../icon-copy.png" alt="コピー">
+                            </div>
+                            <div class="help-text">
+                                <strong>コピーボタン</strong>
+                                <p>投稿のテキストをクリップボードにコピーします。</p>
+                            </div>
+                        </div>
+                        <div class="help-item">
+                            <div class="help-icon">
+                                <img src="../icon-download.png" alt="ダウンロード">
+                            </div>
+                            <div class="help-text">
+                                <strong>画像保存ボタン</strong>
+                                <p>投稿の画像をすべてダウンロードします。</p>
+                            </div>
+                        </div>
+                        <div class="help-item">
+                            <div class="help-icon">
+                                <img src="../icon-delete.png" alt="削除">
+                            </div>
+                            <div class="help-text">
+                                <strong>削除ボタン</strong>
+                                <p>投稿を削除します。GitHubにも反映されます。</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="help-section">
+                        <h3>🏷️ ハッシュタグ</h3>
+                        <p><code>#タグ名</code> のように # をつけると、投稿をカテゴリ分けできます。</p>
+                        <p class="help-example">例: 今日の作業進捗！ <span class="hashtag">#開発</span> <span class="hashtag">#WPF</span></p>
+                    </div>
+
+                    <div class="help-section">
+                        <h3>🔗 URL自動リンク</h3>
+                        <p>https:// で始まるURLを入力すると、自動的にリンクになります。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 設定モーダル -->
+        <div id="settingsModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2><img src="../icon-settings.png" alt="" class="modal-title-icon"> 設定</h2>
+                    <button class="close-btn">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="setting-item">
+                        <label>GitHub設定</label>
+                        <input type="text" id="repoInput" placeholder="リポジトリ (username/repository)" class="setting-input">
+                        <input type="text" id="branchInput" placeholder="ブランチ (main)" class="setting-input" style="margin-top: 8px;">
+                        <input type="password" id="tokenInput" placeholder="Personal Access Token" class="setting-input" style="margin-top: 8px;">
+                        <button id="saveGithubBtn" class="btn-primary full-width" style="margin-top: 12px;">GitHub設定を保存</button>
+                        <p style="font-size: 0.85rem; color: var(--theme-text-light); margin-top: 8px;">
+                            ⚠️ トークンはブラウザのlocalStorageに保存されます。<br>
+                            他の人がこのブラウザを使う場合は注意してください。
+                        </p>
+                    </div>
+                    <div class="setting-item">
+                        <label>アイコン変更</label>
+                        <input type="file" id="iconInput" accept="image/*">
+                        <div id="iconCropArea" class="crop-area" style="display: none;">
+                            <canvas id="iconCropCanvas"></canvas>
+                            <div class="crop-controls">
+                                <button id="cropConfirmBtn" class="btn-primary">トリミング確定</button>
+                                <button id="cropCancelBtn" class="btn-secondary">キャンセル</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="setting-item">
+                        <label>背景画像</label>
+                        <div class="bg-pattern-grid">
+                            <div class="bg-pattern-item" data-bg="none">
+                                <div class="bg-pattern-preview" style="background: var(--theme-bg);"></div>
+                                <span>なし</span>
+                            </div>
+                            <div class="bg-pattern-item" data-bg="../bg-check.png">
+                                <div class="bg-pattern-preview" style="background: url('../bg-check.png'); background-size: cover;"></div>
+                                <span>チェック柄</span>
+                            </div>
+                            <div class="bg-pattern-item" data-bg="../bg-cherry.png">
+                                <div class="bg-pattern-preview" style="background: url('../bg-cherry.png'); background-size: cover;"></div>
+                                <span>さくらんぼ</span>
+                            </div>
+                            <div class="bg-pattern-item" data-bg="../bg-sakura.png">
+                                <div class="bg-pattern-preview" style="background: url('../bg-sakura.png'); background-size: cover;"></div>
+                                <span>さくら</span>
+                            </div>
+                            <div class="bg-pattern-item" data-bg="../bg-kinngyo.png">
+                                <div class="bg-pattern-preview" style="background: url('../bg-kinngyo.png'); background-size: cover;"></div>
+                                <span>きんぎょ</span>
+                            </div>
+                            <div class="bg-pattern-item" data-bg="../bg-border.png">
+                                <div class="bg-pattern-preview bg-border-preview"></div>
+                                <span>ボーダー</span>
+                            </div>
+                            <div class="bg-pattern-item" data-bg="custom">
+                                <div class="bg-pattern-preview" style="background: linear-gradient(45deg, #ccc 25%, transparent 25%, transparent 75%, #ccc 75%, #ccc), linear-gradient(45deg, #ccc 25%, transparent 25%, transparent 75%, #ccc 75%, #ccc); background-size: 20px 20px; background-position: 0 0, 10px 10px;">
+                                    <span style="font-size: 2rem;">+</span>
+                                </div>
+                                <span>カスタム</span>
+                            </div>
+                        </div>
+                        <input type="file" id="bgInput" accept="image/*" style="display: none;">
+                        <div class="checkbox-item" style="margin-top: 12px;">
+                            <input type="checkbox" id="bgOpacityCheck" checked>
+                            <label for="bgOpacityCheck">背景を薄く表示</label>
+                        </div>
+                    </div>
+                    <div class="setting-item">
+                        <label>カラーテーマ</label>
+                        <select id="themeSelect">
+                            <option value="chocolate">チョコレート</option>
+                            <option value="sakura">桜</option>
+                            <option value="ocean">オーシャン</option>
+                            <option value="forest">フォレスト</option>
+                            <option value="sunset">サンセット</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="admin.js"></script>
+</body>
+</html>
