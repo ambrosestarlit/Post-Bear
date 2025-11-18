@@ -259,6 +259,11 @@ function clearFilter() {
 
 // ===== イベントリスナー設定 =====
 function setupEventListeners() {
+    // 更新ボタン
+    document.getElementById('refreshBtn').addEventListener('click', () => {
+        location.reload();
+    });
+    
     // ヘルプボタン
     document.getElementById('helpBtn').addEventListener('click', () => {
         openModal('helpModal');

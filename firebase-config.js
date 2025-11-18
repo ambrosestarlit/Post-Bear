@@ -1,5 +1,4 @@
 // Firebase設定ファイル
-// FIREBASE_SETUP.md の手順に従って、以下の値を設定してください
 
 const firebaseConfig = {
   apiKey: "AIzaSyCwWj6GwBNH6gd0bmc7GxI_-__ifxBHiT0",

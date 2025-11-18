@@ -86,13 +86,14 @@ body {
     background-color: var(--theme-bg);
     color: var(--theme-text);
     line-height: 1.6;
-    padding-bottom: 20px;
     min-height: 100vh;
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
     background-repeat: no-repeat;
     position: relative;
+    padding-top: 64px; /* ヘッダーの高さ分の余白 */
+    overflow-x: hidden;
 }
 
 body::before {
@@ -132,9 +133,11 @@ header {
     background-color: var(--theme-primary);
     color: white;
     padding: 12px;
-    position: sticky;
+    position: fixed;
     top: 0;
-    z-index: 100;
+    left: 0;
+    right: 0;
+    z-index: 1000;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
@@ -352,7 +355,7 @@ h1, h2, h3, h4, h5, h6,
 .timeline {
     max-width: 600px;
     margin: 0 auto;
-    padding: 0 12px;
+    padding: 16px 12px 20px 12px;
 }
 
 .post-item {
@@ -633,25 +636,34 @@ h1, h2, h3, h4, h5, h6,
 
 /* ===== リアクション ===== */
 .post-reactions {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
     margin-top: 12px;
     padding-top: 12px;
     border-top: 1px solid var(--theme-border);
 }
 
+@media (max-width: 480px) {
+    .post-reactions {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 8px;
+    }
+}
+
 .reaction-btn {
     display: inline-flex;
     align-items: center;
-    gap: 4px;
-    padding: 6px 12px;
+    gap: 6px;
+    padding: 8px 14px;
     background: var(--theme-accent);
     border: 2px solid transparent;
-    border-radius: 20px;
+    border-radius: 24px;
     cursor: pointer;
     transition: all 0.3s;
-    font-size: 0.9rem;
+    font-size: 1rem;
+    min-width: 70px;
+    justify-content: center;
 }
 
 .reaction-btn:hover {
@@ -685,14 +697,14 @@ h1, h2, h3, h4, h5, h6,
 }
 
 .reaction-emoji-img {
-    width: 28px;
-    height: 28px;
+    width: 40px;
+    height: 40px;
     object-fit: contain;
     transition: transform 0.2s;
 }
 
 .reaction-btn.reacted .reaction-emoji-img {
-    transform: scale(1.2);
+    transform: scale(1.15);
 }
 
 .reaction-count {
