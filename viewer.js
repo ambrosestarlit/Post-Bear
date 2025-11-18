@@ -5,11 +5,13 @@ let reactionsData = {}; // リアクションデータのキャッシュ
 
 // リアクションの種類
 const REACTIONS = [
-    { emoji: '👍', name: 'いいね' },
-    { emoji: '❤️', name: 'すき' },
-    { emoji: '🎉', name: 'すごい' },
-    { emoji: '😊', name: 'うれしい' },
-    { emoji: '✨', name: 'きれい' }
+    { emoji: 'iine', name: 'いいね', image: 'stamps/iine.png' },
+    { emoji: 'suki', name: 'すき', image: 'stamps/suki.png' },
+    { emoji: 'omedetou', name: 'おめでと', image: 'stamps/omedetou.png' },
+    { emoji: 'gannbare', name: 'がんば', image: 'stamps/gannbare.png' },
+    { emoji: 'otukare', name: 'おつかれ', image: 'stamps/otukare.png' },
+    { emoji: 'kitai', name: '期待', image: 'stamps/kitai.png' },
+    { emoji: 'wakaru', name: 'わかる', image: 'stamps/wakaru.png' }
 ];
 
 // ===== 初期化 =====
@@ -109,7 +111,10 @@ function createPostHTML(post) {
                         data-post-id="${post.id}" 
                         data-reaction="${reaction.emoji}"
                         title="${reaction.name}">
-                    <span class="reaction-emoji">${reaction.emoji}</span>
+                    ${reaction.image 
+                        ? `<img src="${reaction.image}" class="reaction-emoji-img" alt="${reaction.name}">` 
+                        : `<span class="reaction-emoji">${reaction.emoji}</span>`
+                    }
                     <span class="reaction-count" id="count-${post.id}-${reaction.emoji}">0</span>
                 </button>
             `).join('')}
