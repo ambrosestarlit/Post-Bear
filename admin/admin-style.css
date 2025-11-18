@@ -165,6 +165,12 @@
     font-size: 1rem;
 }
 
+.reaction-display .reaction-emoji-img {
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+}
+
 .reaction-display .reaction-count {
     color: var(--theme-text);
     font-weight: 500;

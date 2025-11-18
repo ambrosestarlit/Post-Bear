@@ -11,11 +11,13 @@ let githubConfig = {
 
 // リアクションの種類
 const REACTIONS = [
-    { emoji: '👍', name: 'いいね' },
-    { emoji: '❤️', name: 'すき' },
-    { emoji: '🎉', name: 'すごい' },
-    { emoji: '😊', name: 'うれしい' },
-    { emoji: '✨', name: 'きれい' }
+    { emoji: 'iine', name: 'いいね', image: '../stamps/iine.png' },
+    { emoji: 'suki', name: 'すき', image: '../stamps/suki.png' },
+    { emoji: 'omedetou', name: 'おめでと', image: '../stamps/omedetou.png' },
+    { emoji: 'gannbare', name: 'がんば', image: '../stamps/gannbare.png' },
+    { emoji: 'otukare', name: 'おつかれ', image: '../stamps/otukare.png' },
+    { emoji: 'kitai', name: '期待', image: '../stamps/kitai.png' },
+    { emoji: 'wakaru', name: 'わかる', image: '../stamps/wakaru.png' }
 ];
 
 // トリミング関連
@@ -390,7 +392,10 @@ function createPostHTML(post) {
         <div class="post-reactions-admin">
             ${REACTIONS.map(reaction => `
                 <span class="reaction-display" id="count-${post.id}-${reaction.emoji}">
-                    <span class="reaction-emoji">${reaction.emoji}</span>
+                    ${reaction.image 
+                        ? `<img src="${reaction.image}" class="reaction-emoji-img" alt="${reaction.name}">` 
+                        : `<span class="reaction-emoji">${reaction.emoji}</span>`
+                    }
                     <span class="reaction-count">0</span>
                 </span>
             `).join('')}
@@ -601,14 +606,6 @@ function setupEventListeners() {
     
     // 投稿ボタン
     document.getElementById('postBtn').addEventListener('click', createPost);
-    
-    // Enter キーで投稿（Shift+Enterで改行）
-    document.getElementById('postText').addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            createPost();
-        }
-    });
     
     // 画像選択
     document.getElementById('imageInput').addEventListener('change', handleImageSelect);
@@ -823,8 +820,34 @@ function confirmCrop() {
     
     document.getElementById('currentUserIcon').src = iconData;
     
+    // 既存の全投稿のアイコンを更新
+    updateAllPostIcons(iconData);
+    
     cancelCrop();
     showMessage('アイコンを変更しました', 'success');
+}
+
+// 全投稿のアイコンを更新
+async function updateAllPostIcons(newIconData) {
+    let updated = false;
+    
+    posts.forEach(post => {
+        post.userIcon = newIconData;
+        updated = true;
+    });
+    
+    if (updated) {
+        // ローカルに保存
+        saveLocalPosts();
+        
+        // GitHubにpush
+        const success = await pushToGithub();
+        
+        if (success) {
+            // タイムライン更新
+            renderTimeline();
+        }
+    }
 }
 
 function cancelCrop() {
