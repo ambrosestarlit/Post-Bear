@@ -1,3 +1,12 @@
 {
-  "posts": []
+  "posts": [
+    {
+      "id": "1763484057096",
+      "text": "文字化けしてる？",
+      "timestamp": "2025-11-18T16:40:57.096Z",
+      "images": [],
+      "hashtags": [],
+      "userIcon": "../Default-icon.png"
+    }
+  ]
 }
