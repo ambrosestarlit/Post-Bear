@@ -21,6 +21,18 @@ const REACTIONS = [
     { emoji: 'wakaru', name: 'わかる', image: '../stamps/wakaru.png' }
 ];
 
+// センシティブタグの定義
+const SENSITIVE_TAGS = ['おこごと', 'おとな向け', '不変少年+'];
+
+// よく使うタグのプリセット
+const PRESET_TAGS = [
+    { name: '日常', tag: '#日常' },
+    { name: 'おしらせ', tag: '#おしらせ' },
+    { name: 'おこごと', tag: '#おこごと' },
+    { name: 'おとな向け', tag: '#おとな向け' },
+    { name: '不変少年+', tag: '#不変少年+' }
+];
+
 // トリミング関連
 let cropImage = null;
 let cropCanvas = null;
@@ -363,6 +375,12 @@ function updateImagePreview() {
 function removeImage(index) {
     selectedImages.splice(index, 1);
     updateImagePreview();
+}
+
+// ===== センシティブコンテンツ判定 =====
+function hasSensitiveContent(post) {
+    if (!post.hashtags) return false;
+    return post.hashtags.some(tag => SENSITIVE_TAGS.includes(tag));
 }
 
 // ===== タイムライン表示 =====
@@ -821,6 +839,17 @@ function setupEventListeners() {
         });
     }
     
+    // タグボタン
+    document.querySelectorAll('.tag-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const tag = e.target.dataset.tag;
+            insertTag(tag);
+            
+            // ボタンの状態を切り替え
+            e.target.classList.toggle('active');
+        });
+    });
+    
     // 初期アイコン表示
     const currentUserIcon = document.getElementById('currentUserIcon');
     if (currentUserIcon) {
@@ -828,6 +857,23 @@ function setupEventListeners() {
     }
     
     console.log('イベントリスナー設定完了');
+}
+
+// ===== タグ挿入機能 =====
+function insertTag(tag) {
+    const textarea = document.getElementById('postText');
+    const currentText = textarea.value;
+    
+    // すでにタグが含まれている場合は削除
+    if (currentText.includes(tag)) {
+        textarea.value = currentText.replace(tag, '').replace(/\s+/g, ' ').trim();
+    } else {
+        // タグを追加（末尾に）
+        const newText = currentText.trim();
+        textarea.value = newText ? `${newText} ${tag}` : tag;
+    }
+    
+    textarea.focus();
 }
 
 // ===== アイコン変更処理 =====

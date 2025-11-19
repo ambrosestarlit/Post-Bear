@@ -1,5 +1,53 @@
 /* ===== 管理画面追加スタイル ===== */
 
+/* タグ選択ボタン */
+.tag-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 12px 0;
+    padding: 12px;
+    background: var(--theme-accent);
+    border-radius: 12px;
+}
+
+.tag-btn {
+    padding: 8px 12px;
+    background: var(--theme-card);
+    border: 2px solid transparent;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-size: 0.9rem;
+    color: var(--theme-text);
+    font-family: inherit;
+}
+
+.tag-btn:hover {
+    border-color: var(--theme-primary);
+    transform: translateY(-2px);
+}
+
+.tag-btn.active {
+    background: var(--theme-primary);
+    color: white;
+    border-color: var(--theme-primary);
+}
+
+.tag-btn.sensitive-tag {
+    background: #FFE4E1;
+    color: #8B4513;
+}
+
+.tag-btn.sensitive-tag:hover {
+    border-color: #CD853F;
+}
+
+.tag-btn.sensitive-tag.active {
+    background: #CD853F;
+    color: white;
+}
+
 /* 更新・保存ボタンコンテナ */
 .action-buttons-container {
     max-width: 600px;
