@@ -776,9 +776,74 @@ h1, h2, h3, h4, h5, h6,
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 10px;
-    margin-top: 12px;
-    padding-top: 12px;
-    border-top: 1px solid var(--theme-border);
+    margin-top: 8px;
+    padding: 12px;
+    background: var(--theme-accent);
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    max-height: 200px;
+    overflow: hidden;
+}
+
+.post-reactions.collapsed {
+    max-height: 0;
+    padding: 0 12px;
+    margin-top: 0;
+}
+
+.reaction-toggle-container {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 8px;
+    margin-bottom: 4px;
+}
+
+.reaction-toggle-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    transition: transform 0.3s;
+}
+
+.reaction-toggle-btn:hover {
+    transform: scale(1.05);
+}
+
+.reaction-toggle-img {
+    width: auto;
+    height: 32px;
+    display: block;
+}
+
+.reaction-status {
+    margin-top: 8px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    min-height: 20px;
+}
+
+.reaction-status-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background: var(--theme-card);
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    color: var(--theme-text);
+}
+
+.reaction-status-icon {
+    width: 16px;
+    height: 16px;
+    object-fit: contain;
+}
+
+.reaction-status-count {
+    font-weight: bold;
+    color: var(--theme-primary);
 }
 
 @media (max-width: 480px) {

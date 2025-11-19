@@ -11,7 +11,9 @@ const REACTIONS = [
     { emoji: 'gannbare', name: 'がんば', image: 'stamps/gannbare.png' },
     { emoji: 'otukare', name: 'おつかれ', image: 'stamps/otukare.png' },
     { emoji: 'kitai', name: '期待', image: 'stamps/kitai.png' },
-    { emoji: 'wakaru', name: 'わかる', image: 'stamps/wakaru.png' }
+    { emoji: 'wakaru', name: 'わかる', image: 'stamps/wakaru.png' },
+    { emoji: 'www', name: 'www', image: 'stamps/www.png' },
+    { emoji: 'ok', name: 'OK!', image: 'stamps/ok.png' }
 ];
 
 // センシティブタグの定義
@@ -91,6 +93,14 @@ function renderTimeline() {
         btn.addEventListener('click', handleReactionClick);
     });
     
+    // リアクション開閉ボタンイベント
+    document.querySelectorAll('.reaction-toggle-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const postId = e.target.closest('.reaction-toggle-btn').dataset.postId;
+            toggleReactions(postId);
+        });
+    });
+    
     // リアクション数を読み込み
     filteredPosts.forEach(post => {
         loadReactions(post.id);
@@ -116,9 +126,18 @@ function createPostHTML(post) {
         `;
     }
     
-    // リアクションボタンHTML
+    // リアクション展開ボタン
+    const reactionToggleHTML = `
+        <div class="reaction-toggle-container">
+            <button class="reaction-toggle-btn" data-post-id="${post.id}">
+                <img src="reaction-btn.png" alt="リアクション" class="reaction-toggle-img">
+            </button>
+        </div>
+    `;
+    
+    // 折り畳み式リアクションパネル（初期は非表示）
     const reactionsHTML = `
-        <div class="post-reactions">
+        <div class="post-reactions collapsed" id="reactions-${post.id}">
             ${REACTIONS.map(reaction => `
                 <button class="reaction-btn" 
                         data-post-id="${post.id}" 
@@ -134,6 +153,13 @@ function createPostHTML(post) {
         </div>
     `;
     
+    // 押されたリアクションを小さく表示するエリア
+    const reactionStatusHTML = `
+        <div class="reaction-status" id="status-${post.id}">
+            <!-- 動的に生成される -->
+        </div>
+    `;
+    
     return `
         <div class="post-item" data-id="${post.id}">
             <img src="${post.userIcon || 'Default-icon.png'}" alt="アイコン" class="user-icon">
@@ -141,8 +167,10 @@ function createPostHTML(post) {
                 <div class="post-header">
                     <span class="post-time">${formattedTime}</span>
                 </div>
+                ${reactionStatusHTML}
                 <div class="post-text">${textWithLinks}</div>
                 ${imagesHTML}
+                ${reactionToggleHTML}
                 ${reactionsHTML}
             </div>
         </div>
@@ -491,6 +519,9 @@ async function loadReactions(postId) {
                 reactionsData[postId][reaction.emoji] = 0;
             });
         }
+        
+        // リアクション状態を更新
+        updateReactionStatus(postId);
     } catch (error) {
         console.error('リアクション読み込みエラー:', error);
         // エラー時はローカルデータで表示
@@ -500,6 +531,9 @@ async function loadReactions(postId) {
                 countEl.textContent = '0';
             }
         });
+        
+        // リアクション状態を更新
+        updateReactionStatus(postId);
     }
 }
 
@@ -538,6 +572,37 @@ async function handleReactionClick(e) {
     }
 }
 
+// ===== リアクション開閉制御 =====
+function toggleReactions(postId) {
+    const reactionsPanel = document.getElementById(`reactions-${postId}`);
+    if (reactionsPanel) {
+        reactionsPanel.classList.toggle('collapsed');
+    }
+}
+
+// ===== リアクション状態表示更新 =====
+function updateReactionStatus(postId) {
+    const statusElement = document.getElementById(`status-${postId}`);
+    if (!statusElement) return;
+    
+    let statusHTML = '';
+    
+    // 各リアクションの数をチェック
+    REACTIONS.forEach(reaction => {
+        const countElement = document.getElementById(`count-${postId}-${reaction.emoji}`);
+        if (countElement && parseInt(countElement.textContent) > 0) {
+            statusHTML += `
+                <span class="reaction-status-item">
+                    <img src="${reaction.image}" class="reaction-status-icon" alt="${reaction.name}">
+                    <span class="reaction-status-count">${countElement.textContent}</span>
+                </span>
+            `;
+        }
+    });
+    
+    statusElement.innerHTML = statusHTML;
+}
+
 // リアクション追加
 async function addReaction(postId, reaction) {
     const docRef = db.collection('reactions').doc(postId);
@@ -558,6 +623,9 @@ async function addReaction(postId, reaction) {
     
     // ローカルストレージに記録
     saveUserReaction(postId, reaction, true);
+    
+    // リアクション状態を更新
+    updateReactionStatus(postId);
 }
 
 // リアクション削除
@@ -576,6 +644,9 @@ async function removeReaction(postId, reaction) {
     
     // ローカルストレージから削除
     saveUserReaction(postId, reaction, false);
+    
+    // リアクション状態を更新
+    updateReactionStatus(postId);
 }
 
 // ユーザーがリアクション済みか確認
