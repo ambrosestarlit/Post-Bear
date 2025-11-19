@@ -146,8 +146,23 @@ async function syncWithGithub() {
         });
         
         if (response.ok) {
-            const data = await response.json();
+            // レスポンステキストを取得してからパース
+            const responseText = await response.text();
+            if (!responseText || responseText.trim() === '') {
+                console.log('空のレスポンスを受信。ローカルデータを使用します。');
+                loadLocalPosts();
+                return;
+            }
+            
+            const data = JSON.parse(responseText);
             currentSha = data.sha; // SHAを保存
+            
+            // contentが存在するか確認
+            if (!data.content) {
+                console.log('contentが存在しません。ローカルデータを使用します。');
+                loadLocalPosts();
+                return;
+            }
             
             // Base64デコード（UTF-8対応）
             const base64Content = data.content.replace(/\n/g, '');
@@ -158,17 +173,29 @@ async function syncWithGithub() {
             }
             const decoder = new TextDecoder('utf-8');
             const jsonString = decoder.decode(bytes);
+            
+            // JSONパース前に内容を確認
+            if (!jsonString || jsonString.trim() === '') {
+                console.log('デコード結果が空です。ローカルデータを使用します。');
+                loadLocalPosts();
+                return;
+            }
+            
             const content = JSON.parse(jsonString);
             
             posts = content.posts || [];
             saveLocalPosts();
             renderTimeline();
             updateHashtagList();
-        } else {
+        } else if (response.status === 404) {
             // posts.jsonが存在しない場合は新規作成
+            console.log('posts.jsonが存在しません。新規作成します。');
             posts = [];
             currentSha = null;
             renderTimeline();
+        } else {
+            console.log(`GitHub API エラー: ${response.status} ${response.statusText}`);
+            loadLocalPosts();
         }
     } catch (error) {
         console.log('GitHubからのデータ取得失敗:', error);
@@ -210,10 +237,27 @@ async function pushToGithub() {
         let sha = null;
         let existingContent = null;
         if (getResponse.ok) {
-            const data = await getResponse.json();
-            sha = data.sha;
-            // 既存のコンテンツをデコード
-            existingContent = JSON.parse(atob(data.content));
+            const responseText = await getResponse.text();
+            if (!responseText || responseText.trim() === '') {
+                console.log('空のレスポンス。新規作成として扱います。');
+            } else {
+                const data = JSON.parse(responseText);
+                sha = data.sha;
+                // 既存のコンテンツをデコード
+                if (data.content && data.content.trim() !== '') {
+                    try {
+                        const decodedContent = atob(data.content.replace(/\n/g, ''));
+                        existingContent = JSON.parse(decodedContent);
+                    } catch (e) {
+                        console.log('既存コンテンツのデコードに失敗:', e);
+                    }
+                }
+            }
+        } else if (getResponse.status === 404) {
+            console.log('posts.jsonが存在しません。新規作成します。');
+        } else {
+            const errorText = await getResponse.text();
+            console.log(`GitHub API エラー (GET): ${getResponse.status} ${getResponse.statusText}`, errorText);
         }
         
         // JSONをUTF-8でエンコード
@@ -251,8 +295,11 @@ async function pushToGithub() {
         });
         
         if (putResponse.ok) {
-            const result = await putResponse.json();
-            currentSha = result.content.sha; // 新しいSHAを保存
+            const resultText = await putResponse.text();
+            if (resultText && resultText.trim() !== '') {
+                const result = JSON.parse(resultText);
+                currentSha = result.content.sha; // 新しいSHAを保存
+            }
             // push成功、完全同期済み
             return { success: true, isSynced: true };
         } else if (putResponse.status === 409) {
@@ -266,26 +313,30 @@ async function pushToGithub() {
             });
             
             if (recheckResponse.ok) {
-                const recheckData = await recheckResponse.json();
-                const githubContent = JSON.parse(atob(recheckData.content));
-                
-                console.log('ローカルの投稿数:', posts.length);
-                console.log('GitHubの投稿数:', githubContent.posts ? githubContent.posts.length : 0);
-                
-                // GitHubの内容とローカルの投稿数が同じなら完全同期済み
-                if (githubContent.posts && githubContent.posts.length === posts.length) {
-                    console.log('投稿数が一致。同期済みと判断します。');
-                    currentSha = recheckData.sha;
-                    return { success: true, isSynced: true };
+                const recheckText = await recheckResponse.text();
+                if (recheckText && recheckText.trim() !== '') {
+                    const recheckData = JSON.parse(recheckText);
+                    const githubContent = JSON.parse(atob(recheckData.content.replace(/\n/g, '')));
+                    
+                    console.log('ローカルの投稿数:', posts.length);
+                    console.log('GitHubの投稿数:', githubContent.posts ? githubContent.posts.length : 0);
+                    
+                    // GitHubの内容とローカルの投稿数が同じなら完全同期済み
+                    if (githubContent.posts && githubContent.posts.length === posts.length) {
+                        console.log('投稿数が一致。同期済みと判断します。');
+                        currentSha = recheckData.sha;
+                        return { success: true, isSynced: true };
+                    }
+                    
+                    // 投稿数が違う場合は一部同期
+                    console.warn('投稿数が一致しません。ローカル:', posts.length, 'GitHub:', githubContent.posts.length);
                 }
-                
-                // 投稿数が違う場合は一部同期
-                console.warn('投稿数が一致しません。ローカル:', posts.length, 'GitHub:', githubContent.posts.length);
-                return { success: false, isSynced: false };
             }
             
             return { success: false, isSynced: false };
         } else {
+            const errorText = await putResponse.text();
+            console.log(`GitHub API エラー (PUT): ${putResponse.status} ${putResponse.statusText}`, errorText);
             return { success: false, isSynced: false };
         }
     } catch (error) {
@@ -323,13 +374,28 @@ async function syncToGithub(retryCount = 0) {
                 }
             });
             if (getResponse.ok) {
-                const data = await getResponse.json();
-                const githubContent = JSON.parse(atob(data.content));
-                githubPostCount = githubContent.posts ? githubContent.posts.length : 0;
-                unsyncedCount = posts.length - githubPostCount;
+                const responseText = await getResponse.text();
+                if (responseText && responseText.trim() !== '') {
+                    const data = JSON.parse(responseText);
+                    if (data.content && data.content.trim() !== '') {
+                        const decodedContent = atob(data.content.replace(/\n/g, ''));
+                        if (decodedContent && decodedContent.trim() !== '') {
+                            const githubContent = JSON.parse(decodedContent);
+                            githubPostCount = githubContent.posts ? githubContent.posts.length : 0;
+                            unsyncedCount = posts.length - githubPostCount;
+                        }
+                    }
+                }
+            } else if (getResponse.status === 404) {
+                console.log('posts.jsonが存在しません。新規作成します。');
+                githubPostCount = 0;
+                unsyncedCount = posts.length;
             }
         } catch (e) {
             console.log('投稿数取得エラー:', e);
+            // エラー時はローカルの投稿数を使用
+            githubPostCount = 0;
+            unsyncedCount = posts.length;
         }
     }
     
