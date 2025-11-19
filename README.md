@@ -66,6 +66,29 @@ GitHub APIを使って管理画面から投稿すると、自動的にGitHub Pag
    - リポジトリ名、ブランチ名、トークンを入力
    - 「GitHub設定を保存」をクリック
 
+### ステップ4:メール通知設定（オプション）
+
+投稿が公開されたときに自動でメール通知を受け取れます。
+
+1. **Gmail App Passwordの取得**
+   - **直接リンク**: https://myaccount.google.com/apppasswords にアクセス
+   - （まだの場合）2段階認証を有効化: https://myaccount.google.com/security
+   - アプリ名を入力（例: GitHub Actions）して「作成」
+   - 16桁のパスワードをコピー
+   - 💡 通常のメニューからは見つかりません。上記の直接リンクを使用してください
+
+2. **GitHub Secretsに追加**
+   - GitHubリポジトリ → Settings → Secrets and variables → Actions
+   - 以下の2つのSecretを追加：
+     - `MAIL_USERNAME`: あなたのGmailアドレス（例: your-email@gmail.com）
+     - `MAIL_PASSWORD`: 手順1で取得したアプリパスワード
+
+3. **通知先メールアドレスの変更（必要に応じて）**
+   - `.github/workflows/post-notification.yml` を編集
+   - `to: ambrose.starlit@gmail.com` の部分を変更
+
+これで投稿が公開されるたびに、自動でメール通知が届きます！
+
 ## 📖 使い方
 
 ### 投稿する（管理者）
@@ -114,11 +137,19 @@ Ambrose-Starlit-SNS/
 ├── logo.png               # ロゴ画像
 ├── icon-*.png             # アイコン画像
 ├── bg-*.png               # 背景画像
+├── reaction-btn.png       # リアクションボタン画像
 ├── *.otf                  # フォントファイル
+├── .github/
+│   └── workflows/
+│       └── post-notification.yml  # メール通知用ワークフロー
 ├── admin/
 │   ├── index.html         # 管理画面
 │   ├── admin.js           # 管理画面用スクリプト
 │   └── admin-style.css    # 管理画面用追加スタイル
+├── stamps/                # リアクションスタンプ画像
+│   ├── iine.png          # いいねスタンプ
+│   ├── suki.png          # すきスタンプ
+│   └── ...               # その他スタンプ
 ├── FIREBASE_SETUP.md      # Firebase設定手順書
 └── README.md              # このファイル
 ```
@@ -192,6 +223,12 @@ Ambrose-Starlit-SNS/
 → リポジトリ名が正しいか確認（`username/repository`形式）  
 → ブランチ名が正しいか確認  
 → トークンの有効期限を確認
+
+### メール通知が届かない
+→ GitHub Secrets（`MAIL_USERNAME`と`MAIL_PASSWORD`）が正しく設定されているか確認  
+→ Gmailのアプリパスワードが有効か確認  
+→ GitHubリポジトリ → Actions タブでワークフローの実行結果を確認  
+→ スパムフォルダに入っていないか確認
 
 ## 💡 Tips
 

@@ -36,10 +36,21 @@ jobs:
           POST_ID=$(jq -r '.posts[0].id' posts.json)
           HASHTAGS=$(jq -r '.posts[0].hashtags | join(", ")' posts.json)
           
-          echo "post_text=$POST_TEXT" >> $GITHUB_OUTPUT
+          # 複数行テキストの安全な出力
+          {
+            echo "post_text<<EOF"
+            echo "$POST_TEXT"
+            echo "EOF"
+          } >> $GITHUB_OUTPUT
+          
           echo "post_time=$POST_TIME" >> $GITHUB_OUTPUT
           echo "post_id=$POST_ID" >> $GITHUB_OUTPUT
-          echo "hashtags=$HASHTAGS" >> $GITHUB_OUTPUT
+          
+          {
+            echo "hashtags<<EOF"
+            echo "$HASHTAGS"
+            echo "EOF"
+          } >> $GITHUB_OUTPUT
       
       - name: Send email notification
         if: steps.check_posts.outputs.posts_updated == 'true'
