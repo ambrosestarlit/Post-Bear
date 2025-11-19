@@ -1134,10 +1134,7 @@ async function saveChanges() {
     saveBtn.textContent = '保存中...';
     
     try {
-        // GitHubから最新データを取得
-        await syncWithGithub();
-        
-        // GitHubにpush
+        // GitHubにpush（syncはpushToGithub内で最新SHAを取得するので不要）
         const success = await pushToGithub();
         
         if (success) {
