@@ -18,7 +18,9 @@ const REACTIONS = [
     { emoji: 'gannbare', name: 'がんば', image: '../stamps/gannbare.png' },
     { emoji: 'otukare', name: 'おつかれ', image: '../stamps/otukare.png' },
     { emoji: 'kitai', name: '期待', image: '../stamps/kitai.png' },
-    { emoji: 'wakaru', name: 'わかる', image: '../stamps/wakaru.png' }
+    { emoji: 'wakaru', name: 'わかる', image: '../stamps/wakaru.png' },
+    { emoji: 'www', name: 'www', image: '../stamps/www.png' },
+    { emoji: 'ok', name: 'OK!', image: '../stamps/ok.png' }
 ];
 
 // センシティブタグの定義
