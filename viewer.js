@@ -193,32 +193,54 @@ function showEmptyState() {
     timeline.innerHTML = `
         <div class="empty-state">
             <img src="logo.png" alt="Ambrose＊Starlit" style="width: 120px; opacity: 0.5; margin-bottom: 16px;">
-            <p>まだ投稿がありません</p>
+            <p>まだ投稿がありません🧸</p>
             <p style="font-size: 0.9rem; color: var(--theme-text-light);">管理画面から投稿してください</p>
         </div>
     `;
 }
 
 // ===== ハッシュタグリスト更新 =====
+// デフォルトタグの定義
+const DEFAULT_TAGS = ['日常', 'おしらせ', 'おこごと', 'おとな向け', '不変少年+'];
+
 function updateHashtagList() {
     const hashtagList = document.getElementById('hashtagList');
-    const hashtags = new Set();
     
+    // 使用されたタグを収集（デフォルトタグ以外）
+    const usedTags = new Set();
     posts.forEach(post => {
         if (post.hashtags) {
-            post.hashtags.forEach(tag => hashtags.add(tag));
+            post.hashtags.forEach(tag => {
+                if (!DEFAULT_TAGS.includes(tag)) {
+                    usedTags.add(tag);
+                }
+            });
         }
     });
     
-    if (hashtags.size === 0) {
-        hashtagList.innerHTML = '<p style="color: var(--theme-text-light); text-align: center;">ハッシュタグがありません</p>';
-        return;
+    // デフォルトタグを常に表示
+    let tagsHTML = '<div class="default-tags-section">';
+    tagsHTML += '<h4>デフォルトタグ</h4>';
+    tagsHTML += '<div class="tag-grid">';
+    DEFAULT_TAGS.forEach(tag => {
+        tagsHTML += `<div class="hashtag-item default-tag" data-tag="${tag}">#${tag}</div>`;
+    });
+    tagsHTML += '</div></div>';
+    
+    // 使用されたタグがある場合は追加表示
+    if (usedTags.size > 0) {
+        tagsHTML += '<div class="custom-tags-section">';
+        tagsHTML += '<h4>その他のタグ</h4>';
+        tagsHTML += '<div class="tag-grid">';
+        Array.from(usedTags).forEach(tag => {
+            tagsHTML += `<div class="hashtag-item custom-tag" data-tag="${tag}">#${tag}</div>`;
+        });
+        tagsHTML += '</div></div>';
     }
     
-    hashtagList.innerHTML = Array.from(hashtags)
-        .map(tag => `<div class="hashtag-item" data-tag="${tag}">#${tag}</div>`)
-        .join('');
+    hashtagList.innerHTML = tagsHTML;
     
+    // クリックイベント
     document.querySelectorAll('.hashtag-item').forEach(item => {
         item.addEventListener('click', () => {
             const tag = item.dataset.tag;
@@ -275,6 +297,14 @@ function setupEventListeners() {
     // 更新ボタン
     document.getElementById('refreshBtn').addEventListener('click', () => {
         location.reload();
+    });
+    
+    // トップページのタグボタン
+    document.querySelectorAll('.top-tag-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const tag = btn.dataset.tag;
+            filterByHashtag(tag);
+        });
     });
     
     // ヘルプボタン
