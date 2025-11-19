@@ -489,6 +489,8 @@ function createPostHTML(post) {
 function linkifyText(text) {
     text = text.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" class="post-url" target="_blank" rel="noopener">$1</a>');
     text = text.replace(/#([^\s#]+)/g, '<span class="hashtag">#$1</span>');
+    // 【リアクション】をリアクションボタン画像に置き換え
+    text = text.replace(/【リアクション】/g, '<img src="../reaction-btn.png" alt="リアクション" style="width: 120px; height: auto; vertical-align: middle;">');
     return text;
 }
 
