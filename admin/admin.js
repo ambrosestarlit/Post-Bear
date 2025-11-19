@@ -297,12 +297,6 @@ async function processSyncQueue() {
         updateSyncStatus();
         setTimeout(() => processSyncQueue(), 5000);
     }
-} {
-        console.error('同期エラー:', error);
-        isSyncing = false;
-        updateSyncStatus();
-        setTimeout(() => processSyncQueue(), 5000);
-    }
 }
 
 // ===== 同期状態を更新 =====
