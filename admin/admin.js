@@ -289,20 +289,24 @@ async function pushToGithub() {
 }
 
 // ===== GitHubと同期 =====
-async function syncToGithub() {
+let syncAudio = null;
+async function syncToGithub(retryCount = 0) {
     // 前回の同期から3秒以内なら何もしない（連続呼び出し防止）
     const now = Date.now();
-    if (now - lastSyncTime < 3000) {
+    if (now - lastSyncTime < 3000 && retryCount === 0) {
         console.log('同期スキップ（前回から3秒以内）');
         return;
     }
     
-    lastSyncTime = now;
+    if (retryCount === 0) {
+        lastSyncTime = now;
+    }
     
     const authStatus = document.getElementById('authStatus');
-    if (authStatus) {
+    if (authStatus && retryCount === 0) {
         authStatus.className = 'auth-status loading';
-        authStatus.textContent = '🔄 同期中...';
+        const unsyncedCount = posts.length;
+        authStatus.textContent = `🔄 ${unsyncedCount}件更新中...`;
     }
     
     const success = await pushToGithub();
@@ -311,9 +315,29 @@ async function syncToGithub() {
         if (success) {
             authStatus.className = 'auth-status connected';
             authStatus.textContent = `✅ GitHub接続成功: ${githubConfig.repo}`;
+            
+            // 音を鳴らす
+            if (!syncAudio) {
+                syncAudio = new Audio('sync-complete.mp3');
+            }
+            syncAudio.play().catch(e => console.log('音声再生エラー:', e));
+            
         } else {
-            authStatus.className = 'auth-status loading';
-            authStatus.textContent = `⚠️ 同期失敗（次回自動リトライ）`;
+            // 失敗時、最大3回までリトライ（静かに）
+            if (retryCount < 3) {
+                console.log(`同期失敗、3秒後にリトライ（${retryCount + 1}/3回目）`);
+                
+                // 少し待ってからリトライ
+                await new Promise(resolve => setTimeout(resolve, 3000));
+                await syncToGithub(retryCount + 1);
+            } else {
+                // 最大リトライ後も静かに次回を待つ
+                console.log('同期失敗。次回の定期同期で再試行します。');
+                if (authStatus) {
+                    authStatus.className = 'auth-status connected';
+                    authStatus.textContent = `✅ GitHub接続成功: ${githubConfig.repo}`;
+                }
+            }
         }
     }
 }
@@ -371,7 +395,7 @@ async function createPost() {
         renderTimeline();
         updateHashtagList();
         
-        showMessage('投稿しました！', 'success');
+        showMessage('送信完了✨', 'success');
         
         // すぐに同期を試みる
         syncToGithub();
@@ -401,7 +425,7 @@ function deletePost(postId) {
     renderTimeline();
     updateHashtagList();
     
-    showMessage('削除しました！', 'success');
+    showMessage('削除しました✨', 'success');
     
     // すぐに同期を試みる
     syncToGithub();
