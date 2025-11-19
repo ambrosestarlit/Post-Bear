@@ -116,6 +116,14 @@ async function checkGithubConnection() {
         if (response.ok) {
             statusEl.className = 'auth-status connected';
             statusEl.textContent = `✅ GitHub接続成功: ${githubConfig.repo}`;
+            
+            // 2秒後にメッセージを消す
+            setTimeout(() => {
+                if (statusEl.textContent.startsWith('✅')) {
+                    statusEl.textContent = '';
+                }
+            }, 2000);
+            
             await syncWithGithub();
         } else {
             statusEl.className = 'auth-status disconnected';
@@ -334,23 +342,28 @@ async function syncToGithub(retryCount = 0) {
     
     if (authStatus) {
         if (result.success) {
-            authStatus.className = 'auth-status connected';
-            authStatus.textContent = `✅ GitHub接続成功: ${githubConfig.repo}`;
-            
-            // 2秒後に成功メッセージを消す
-            setTimeout(() => {
-                if (authStatus.textContent.startsWith('✅')) {
-                    authStatus.textContent = '';
-                }
-            }, 2000);
-            
-            // 完全同期したときだけ音を鳴らす
+            // 完全同期したかどうかで処理を分ける
             if (result.isSynced) {
+                // 全件同期完了
                 console.log('✨ 全ての投稿が同期完了しました');
+                authStatus.className = 'auth-status connected';
+                authStatus.textContent = `✅ GitHub接続成功: ${githubConfig.repo}`;
+                
+                // 音を鳴らす
                 if (!syncAudio) {
                     syncAudio = new Audio('sync-complete.mp3');
                 }
                 syncAudio.play().catch(e => console.log('音声再生エラー:', e));
+                
+                // 2秒後にメッセージを消す
+                setTimeout(() => {
+                    if (authStatus.textContent.startsWith('✅')) {
+                        authStatus.textContent = '';
+                    }
+                }, 2000);
+            } else {
+                // まだ未同期がある場合は更新中を継続表示
+                // （次の定期同期で更新される）
             }
             
         } else {

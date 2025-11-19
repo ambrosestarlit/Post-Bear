@@ -134,6 +134,10 @@
     text-align: center;
 }
 
+.auth-status:empty {
+    display: none;
+}
+
 .auth-status.connected {
     background: #d4edda;
     color: #155724;
