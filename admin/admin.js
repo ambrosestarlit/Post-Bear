@@ -869,20 +869,18 @@ function showCropArea() {
     cropCanvas.addEventListener('touchstart', (e) => {
         e.preventDefault();
         const touch = e.touches[0];
-        const rect = cropCanvas.getBoundingClientRect();
         startCrop({
-            offsetX: touch.clientX - rect.left,
-            offsetY: touch.clientY - rect.top
+            clientX: touch.clientX,
+            clientY: touch.clientY
         });
     });
     
     cropCanvas.addEventListener('touchmove', (e) => {
         e.preventDefault();
         const touch = e.touches[0];
-        const rect = cropCanvas.getBoundingClientRect();
         updateCrop({
-            offsetX: touch.clientX - rect.left,
-            offsetY: touch.clientY - rect.top
+            clientX: touch.clientX,
+            clientY: touch.clientY
         });
     });
     
@@ -891,35 +889,50 @@ function showCropArea() {
 
 function startCrop(e) {
     isCropping = true;
-    cropStart = { x: e.offsetX, y: e.offsetY };
-    cropEnd = { x: e.offsetX, y: e.offsetY };
+    // offsetXの代わりにclientXとgetBoundingClientRectを使用
+    const rect = cropCanvas.getBoundingClientRect();
+    const scaleX = cropCanvas.width / rect.width;
+    const scaleY = cropCanvas.height / rect.height;
+    
+    const x = (e.clientX - rect.left) * scaleX;
+    const y = (e.clientY - rect.top) * scaleY;
+    
+    cropStart = { x: x, y: y };
+    cropEnd = { x: x, y: y };
 }
 
 function updateCrop(e) {
     if (!isCropping) return;
     
-    cropEnd = { x: e.offsetX, y: e.offsetY };
+    // offsetXの代わりにclientXとgetBoundingClientRectを使用
+    const rect = cropCanvas.getBoundingClientRect();
+    const scaleX = cropCanvas.width / rect.width;
+    const scaleY = cropCanvas.height / rect.height;
+    
+    const x = (e.clientX - rect.left) * scaleX;
+    const y = (e.clientY - rect.top) * scaleY;
+    
+    cropEnd = { x: x, y: y };
     
     cropCtx.clearRect(0, 0, cropCanvas.width, cropCanvas.height);
     cropCtx.drawImage(cropImage, 0, 0, cropCanvas.width, cropCanvas.height);
     
-    const size = Math.min(
-        Math.abs(cropEnd.x - cropStart.x),
-        Math.abs(cropEnd.y - cropStart.y)
-    );
+    const width = Math.abs(cropEnd.x - cropStart.x);
+    const height = Math.abs(cropEnd.y - cropStart.y);
+    const size = Math.min(width, height);
     
-    const x = cropEnd.x > cropStart.x ? cropStart.x : cropStart.x - size;
-    const y = cropEnd.y > cropStart.y ? cropStart.y : cropStart.y - size;
+    const startX = cropEnd.x > cropStart.x ? cropStart.x : cropEnd.x;
+    const startY = cropEnd.y > cropStart.y ? cropStart.y : cropEnd.y;
     
     cropCtx.strokeStyle = 'var(--theme-primary)';
     cropCtx.lineWidth = 3;
-    cropCtx.strokeRect(x, y, size, size);
+    cropCtx.strokeRect(startX, startY, size, size);
     
     cropCtx.fillStyle = 'rgba(0, 0, 0, 0.5)';
-    cropCtx.fillRect(0, 0, cropCanvas.width, y);
-    cropCtx.fillRect(0, y, x, size);
-    cropCtx.fillRect(x + size, y, cropCanvas.width - x - size, size);
-    cropCtx.fillRect(0, y + size, cropCanvas.width, cropCanvas.height - y - size);
+    cropCtx.fillRect(0, 0, cropCanvas.width, startY);
+    cropCtx.fillRect(0, startY, startX, size);
+    cropCtx.fillRect(startX + size, startY, cropCanvas.width - startX - size, size);
+    cropCtx.fillRect(0, startY + size, cropCanvas.width, cropCanvas.height - startY - size);
 }
 
 function endCrop() {
@@ -929,18 +942,17 @@ function endCrop() {
 function confirmCrop() {
     if (!cropStart || !cropEnd) return;
     
-    const size = Math.min(
-        Math.abs(cropEnd.x - cropStart.x),
-        Math.abs(cropEnd.y - cropStart.y)
-    );
+    const width = Math.abs(cropEnd.x - cropStart.x);
+    const height = Math.abs(cropEnd.y - cropStart.y);
+    const size = Math.min(width, height);
     
-    if (size < 20) {
-        showMessage('トリミング範囲が小さすぎます', 'error');
+    if (size < 10) {
+        showMessage('トリミング範囲が小さすぎます（もう少し大きく選択してください）', 'error');
         return;
     }
     
-    const x = cropEnd.x > cropStart.x ? cropStart.x : cropStart.x - size;
-    const y = cropEnd.y > cropStart.y ? cropStart.y : cropStart.y - size;
+    const startX = cropEnd.x > cropStart.x ? cropStart.x : cropEnd.x;
+    const startY = cropEnd.y > cropStart.y ? cropStart.y : cropEnd.y;
     
     const scale = cropImage.width / cropCanvas.width;
     
@@ -951,7 +963,7 @@ function confirmCrop() {
     
     tempCtx.drawImage(
         cropImage,
-        x * scale, y * scale, size * scale, size * scale,
+        startX * scale, startY * scale, size * scale, size * scale,
         0, 0, 200, 200
     );
     
