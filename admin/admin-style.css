@@ -217,7 +217,7 @@
 /* リアクション表示（管理画面用） */
 .post-reactions-admin {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(3, 1fr);
     gap: 10px;
     margin-top: 12px;
     padding-top: 12px;
