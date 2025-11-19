@@ -185,6 +185,11 @@ function linkifyText(text) {
     // ハッシュタグをハイライト
     text = text.replace(/#([^\s#]+)/g, '<span class="hashtag">#$1</span>');
     
+    // カスタム絵文字を置換
+    if (typeof replaceEmojisInText === 'function') {
+        text = replaceEmojisInText(text);
+    }
+    
     return text;
 }
 
@@ -590,13 +595,10 @@ function updateReactionStatus(postId) {
     // 各リアクションの数をチェック
     REACTIONS.forEach(reaction => {
         const countElement = document.getElementById(`count-${postId}-${reaction.emoji}`);
-        if (countElement && parseInt(countElement.textContent) > 0) {
-            statusHTML += `
-                <span class="reaction-status-item">
-                    <img src="${reaction.image}" class="reaction-status-icon" alt="${reaction.name}">
-                    <span class="reaction-status-count">${countElement.textContent}</span>
-                </span>
-            `;
+        const count = countElement ? parseInt(countElement.textContent) : 0;
+        
+        if (count > 0) {
+            statusHTML += `<img src="${reaction.image}" class="reaction-status-icon" alt="${reaction.name}">`;
         }
     });
     

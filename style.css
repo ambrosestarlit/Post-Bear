@@ -817,11 +817,11 @@ h1, h2, h3, h4, h5, h6,
 }
 
 .reaction-status {
-    margin-top: 8px;
     display: flex;
     flex-wrap: wrap;
     gap: 6px;
-    min-height: 20px;
+    min-height: 0;
+    margin: 4px 0;
 }
 
 .reaction-status-item {
@@ -836,8 +836,8 @@ h1, h2, h3, h4, h5, h6,
 }
 
 .reaction-status-icon {
-    width: 16px;
-    height: 16px;
+    width: 20px;
+    height: 20px;
     object-fit: contain;
 }
 
@@ -1328,3 +1328,19 @@ code {
     font-size: 1.1rem;
     margin-top: 12px;
 }
+
+/* ===== カスタム絵文字（ビューア用） ===== */
+.inline-emoji {
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+    vertical-align: middle;
+    display: inline-block;
+    margin: 0 2px;
+}
+
+.post-text .inline-emoji {
+    display: inline-block;
+    vertical-align: text-bottom;
+}
+
