@@ -721,17 +721,26 @@ function setupEventListeners() {
         console.log('設定ボタン: OK');
     }
     
-    console.log('イベントリスナー設定完了');
-}
+    // フィルタークリア
+    const clearFilterBtn = document.getElementById('clearFilterBtn');
+    if (clearFilterBtn) {
+        clearFilterBtn.addEventListener('click', () => {
+            clearFilter();
+            closeModal('searchModal');
+        });
+    }
     
     // ハッシュタグ検索
-    document.getElementById('hashtagSearch').addEventListener('input', (e) => {
-        const search = e.target.value.toLowerCase().replace('#', '');
-        document.querySelectorAll('.hashtag-item').forEach(item => {
-            const tag = item.dataset.tag.toLowerCase();
-            item.style.display = tag.includes(search) ? '' : 'none';
+    const hashtagSearch = document.getElementById('hashtagSearch');
+    if (hashtagSearch) {
+        hashtagSearch.addEventListener('input', (e) => {
+            const search = e.target.value.toLowerCase().replace('#', '');
+            document.querySelectorAll('.hashtag-item').forEach(item => {
+                const tag = item.dataset.tag.toLowerCase();
+                item.style.display = tag.includes(search) ? '' : 'none';
+            });
         });
-    });
+    }
     
     // モーダル閉じる
     document.querySelectorAll('.close-btn').forEach(btn => {
@@ -751,9 +760,20 @@ function setupEventListeners() {
     });
     
     // アイコン変更
-    document.getElementById('iconInput').addEventListener('change', handleIconChange);
-    document.getElementById('cropConfirmBtn').addEventListener('click', confirmCrop);
-    document.getElementById('cropCancelBtn').addEventListener('click', cancelCrop);
+    const iconInput = document.getElementById('iconInput');
+    if (iconInput) {
+        iconInput.addEventListener('change', handleIconChange);
+    }
+    
+    const cropConfirmBtn = document.getElementById('cropConfirmBtn');
+    if (cropConfirmBtn) {
+        cropConfirmBtn.addEventListener('click', confirmCrop);
+    }
+    
+    const cropCancelBtn = document.getElementById('cropCancelBtn');
+    if (cropCancelBtn) {
+        cropCancelBtn.addEventListener('click', cancelCrop);
+    }
     
     // 背景画像選択
     document.querySelectorAll('.bg-pattern-item').forEach(item => {
@@ -763,21 +783,35 @@ function setupEventListeners() {
     });
     
     // カスタム背景
-    document.getElementById('bgInput').addEventListener('change', handleCustomBackground);
+    const bgInput = document.getElementById('bgInput');
+    if (bgInput) {
+        bgInput.addEventListener('change', handleCustomBackground);
+    }
     
     // 背景透明度
-    document.getElementById('bgOpacityCheck').addEventListener('change', (e) => {
-        document.body.classList.toggle('bg-clear', !e.target.checked);
-        localStorage.setItem('bgOpacity', e.target.checked ? 'true' : 'false');
-    });
+    const bgOpacityCheck = document.getElementById('bgOpacityCheck');
+    if (bgOpacityCheck) {
+        bgOpacityCheck.addEventListener('change', (e) => {
+            document.body.classList.toggle('bg-clear', !e.target.checked);
+            localStorage.setItem('bgOpacity', e.target.checked ? 'true' : 'false');
+        });
+    }
     
     // テーマ変更
-    document.getElementById('themeSelect').addEventListener('change', (e) => {
-        changeTheme(e.target.value);
-    });
+    const themeSelect = document.getElementById('themeSelect');
+    if (themeSelect) {
+        themeSelect.addEventListener('change', (e) => {
+            changeTheme(e.target.value);
+        });
+    }
     
     // 初期アイコン表示
-    document.getElementById('currentUserIcon').src = getUserIcon();
+    const currentUserIcon = document.getElementById('currentUserIcon');
+    if (currentUserIcon) {
+        currentUserIcon.src = getUserIcon();
+    }
+    
+    console.log('イベントリスナー設定完了');
 }
 
 // ===== アイコン変更処理 =====
