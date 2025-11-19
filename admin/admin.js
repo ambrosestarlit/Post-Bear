@@ -201,13 +201,23 @@ async function pushToGithub() {
         });
         
         let sha = null;
+        let existingContent = null;
         if (getResponse.ok) {
             const data = await getResponse.json();
             sha = data.sha;
+            // 既存のコンテンツをデコード
+            existingContent = JSON.parse(atob(data.content));
         }
         
         // JSONをUTF-8でエンコード
         const jsonString = JSON.stringify({ posts }, null, 2);
+        
+        // 既存の内容と同じなら成功扱い
+        if (existingContent && JSON.stringify(existingContent) === jsonString) {
+            console.log('GitHubの内容は既に最新です');
+            return true;
+        }
+        
         const encoder = new TextEncoder();
         const utf8Bytes = encoder.encode(jsonString);
         
@@ -237,6 +247,30 @@ async function pushToGithub() {
             const result = await putResponse.json();
             currentSha = result.content.sha; // 新しいSHAを保存
             return true;
+        } else if (putResponse.status === 409) {
+            // 409エラー（競合）の場合、もう一度GitHubの内容を確認
+            console.log('409競合エラー。GitHubの内容を再確認します...');
+            const recheckResponse = await fetch(`https://api.github.com/repos/${githubConfig.repo}/contents/posts.json?ref=${githubConfig.branch}`, {
+                headers: {
+                    'Authorization': `token ${githubConfig.token}`,
+                    'Accept': 'application/vnd.github.v3+json'
+                }
+            });
+            
+            if (recheckResponse.ok) {
+                const recheckData = await recheckResponse.json();
+                const githubContent = JSON.parse(atob(recheckData.content));
+                
+                // GitHubの内容とローカルが同じなら成功扱い
+                if (JSON.stringify(githubContent) === jsonString) {
+                    console.log('GitHubの内容は既に最新です（409後の確認）');
+                    currentSha = recheckData.sha;
+                    return true;
+                }
+            }
+            
+            const error = await putResponse.json();
+            throw new Error(error.message || 'GitHub pushに失敗しました');
         } else {
             const error = await putResponse.json();
             throw new Error(error.message || 'GitHub pushに失敗しました');
