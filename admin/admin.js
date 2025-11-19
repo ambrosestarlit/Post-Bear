@@ -753,8 +753,25 @@ function setupEventListeners() {
         settingsBtn.addEventListener('click', () => {
             console.log('設定ボタンクリック');
             openModal('settingsModal');
+            // 設定画面を開いたときに絵文字一覧を更新
+            if (typeof renderEmojiList === 'function') {
+                renderEmojiList();
+            }
         });
         console.log('設定ボタン: OK');
+    }
+    
+    // 絵文字パレットボタン
+    const emojiPaletteBtn = document.getElementById('emojiPaletteBtn');
+    if (emojiPaletteBtn) {
+        emojiPaletteBtn.addEventListener('click', () => {
+            console.log('絵文字パレットボタンクリック');
+            openModal('emojiPaletteModal');
+            if (typeof renderEmojiPalette === 'function') {
+                renderEmojiPalette();
+            }
+        });
+        console.log('絵文字パレットボタン: OK');
     }
     
     // フィルタークリア
