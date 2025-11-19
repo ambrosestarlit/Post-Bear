@@ -10,6 +10,10 @@ let githubConfig = {
     token: ''
 };
 
+// 同期キュー
+let syncQueue = [];
+let isSyncing = false;
+
 // リアクションの種類
 const REACTIONS = [
     { emoji: 'iine', name: 'いいね', image: '../stamps/iine.png' },
@@ -242,6 +246,77 @@ async function pushToGithub() {
     }
 }
 
+// ===== 同期キューに追加 =====
+function addToSyncQueue(postId) {
+    syncQueue.push(postId);
+    updateSyncStatus();
+    processSyncQueue();
+}
+
+// ===== 同期キューを処理 =====
+async function processSyncQueue() {
+    if (isSyncing || syncQueue.length === 0) return;
+    
+    isSyncing = true;
+    updateSyncStatus();
+    
+    try {
+        // GitHubにpush
+        const success = await pushToGithub();
+        
+        if (success) {
+            // 成功したらキューから削除し、syncedフラグを立てる
+            const syncedId = syncQueue.shift();
+            const post = posts.find(p => p.id === syncedId);
+            if (post) {
+                post.synced = true;
+            }
+            saveLocalPosts();
+            updateSyncStatus();
+            
+            // 次のキューがあれば処理
+            if (syncQueue.length > 0) {
+                isSyncing = false;
+                setTimeout(() => processSyncQueue(), 1000); // 1秒待ってから次
+            } else {
+                isSyncing = false;
+            }
+        } else {
+            // 失敗したら5秒後にリトライ
+            isSyncing = false;
+            updateSyncStatus();
+            setTimeout(() => processSyncQueue(), 5000);
+        }
+    } catch (error) {
+        console.error('同期エラー:', error);
+        isSyncing = false;
+        updateSyncStatus();
+        setTimeout(() => processSyncQueue(), 5000);
+    }
+}
+
+// ===== 同期状態を更新 =====
+function updateSyncStatus() {
+    const authStatus = document.getElementById('authStatus');
+    if (!authStatus) return;
+    
+    if (syncQueue.length === 0 && !isSyncing) {
+        // 同期完了
+        if (authStatus.classList.contains('connected')) {
+            authStatus.textContent = `✅ GitHub接続成功: ${githubConfig.repo}`;
+        }
+    } else if (isSyncing) {
+        // 同期中
+        authStatus.className = 'auth-status loading';
+        authStatus.textContent = `🔄 同期中... ${syncQueue.length > 0 ? `(${syncQueue.length}件待ち)` : ''}`;
+    } else {
+        // 待機中
+        authStatus.className = 'auth-status loading';
+        authStatus.textContent = `⏳ 同期待ち (${syncQueue.length}件)`;
+    }
+    }
+}
+
 // ===== 投稿処理 =====
 async function createPost() {
     const text = document.getElementById('postText').value.trim();
@@ -250,10 +325,6 @@ async function createPost() {
         showMessage('投稿内容を入力してください', 'error');
         return;
     }
-    
-    const postBtn = document.getElementById('postBtn');
-    postBtn.disabled = true;
-    postBtn.textContent = '投稿中...';
     
     try {
         // ハッシュタグ抽出
@@ -266,48 +337,35 @@ async function createPost() {
             timestamp: new Date().toISOString(),
             images: selectedImages,
             hashtags: hashtags,
-            userIcon: getUserIcon()
+            userIcon: getUserIcon(),
+            synced: false // 同期状態フラグ
         };
         
         // 投稿を先頭に追加
         posts.unshift(post);
         
-        // ローカルに保存
+        // ローカルに即座に保存
         saveLocalPosts();
         
-        // GitHubに即座にpush
-        const success = await pushToGithub();
+        // フォームリセット（即座に）
+        document.getElementById('postText').value = '';
+        selectedImages = [];
+        document.getElementById('imagePreview').innerHTML = '';
         
-        if (success) {
-            showMessage('投稿しました！', 'success');
-            
-            // フォームリセット
-            document.getElementById('postText').value = '';
-            selectedImages = [];
-            document.getElementById('imagePreview').innerHTML = '';
-            
-            // タイムライン更新
-            renderTimeline();
-            updateHashtagList();
-            
-            // 投稿は即座に保存されるので未保存フラグをクリア
-            clearUnsavedChanges();
-        } else {
-            // push失敗した場合は投稿を取り消し
-            posts.shift();
-            saveLocalPosts();
-            renderTimeline();
-            showMessage('投稿に失敗しました', 'error');
-        }
+        // タイムライン更新（即座に）
+        renderTimeline();
+        updateHashtagList();
+        
+        showMessage('投稿しました！同期中...', 'success');
+        
+        // バックグラウンドでGitHubに同期
+        addToSyncQueue(post.id);
+        
     } catch (error) {
         console.error('投稿エラー:', error);
         showMessage('投稿に失敗しました: ' + error.message, 'error');
-        // エラー時も投稿を取り消し
-        posts.shift();
-        saveLocalPosts();
-        renderTimeline();
-    } finally {
-        postBtn.disabled = false;
+    }
+}
         postBtn.textContent = '投稿';
     }
 }
@@ -321,7 +379,7 @@ function deletePost(postId) {
     const index = posts.findIndex(p => p.id === postId);
     if (index === -1) return;
     
-    // 投稿を削除（ローカルのみ）
+    // 投稿を削除（ローカルから即座に削除）
     posts.splice(index, 1);
     
     // ローカルに保存
@@ -331,9 +389,10 @@ function deletePost(postId) {
     renderTimeline();
     updateHashtagList();
     
-    // 未保存の変更があることを表示
-    showUnsavedChanges();
-    showMessage('削除しました（まだ保存されていません）', 'success');
+    showMessage('削除しました！同期中...', 'success');
+    
+    // バックグラウンドでGitHubに同期
+    addToSyncQueue('delete');
 }
 
 // ===== ハッシュタグ抽出 =====
