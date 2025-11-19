@@ -305,6 +305,7 @@ async function syncToGithub(retryCount = 0) {
     
     // 未同期の投稿数を計算（GitHubから最新を取得して比較）
     let unsyncedCount = 0;
+    let githubPostCount = 0;
     if (retryCount === 0) {
         try {
             const getResponse = await fetch(`https://api.github.com/repos/${githubConfig.repo}/contents/posts.json?ref=${githubConfig.branch}`, {
@@ -316,20 +317,17 @@ async function syncToGithub(retryCount = 0) {
             if (getResponse.ok) {
                 const data = await getResponse.json();
                 const githubContent = JSON.parse(atob(data.content));
-                unsyncedCount = posts.length - (githubContent.posts ? githubContent.posts.length : 0);
+                githubPostCount = githubContent.posts ? githubContent.posts.length : 0;
+                unsyncedCount = posts.length - githubPostCount;
             }
         } catch (e) {
             console.log('投稿数取得エラー:', e);
         }
     }
     
-    if (authStatus && retryCount === 0) {
+    if (authStatus && retryCount === 0 && unsyncedCount > 0) {
         authStatus.className = 'auth-status loading';
-        if (unsyncedCount > 0) {
-            authStatus.textContent = `🔄 ${unsyncedCount}件更新中...`;
-        } else {
-            authStatus.textContent = `🔄 同期確認中...`;
-        }
+        authStatus.textContent = `🔄 ${githubPostCount + 1}/${posts.length}件更新中...`;
     }
     
     const result = await pushToGithub();
