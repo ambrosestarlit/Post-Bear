@@ -686,18 +686,6 @@ function setupEventListeners() {
         console.error('saveChangesBtn が見つかりません');
     }
     
-    // 公開ページを見る
-    const viewPublicBtn = document.getElementById('viewPublicBtn');
-    if (viewPublicBtn) {
-        viewPublicBtn.addEventListener('click', () => {
-            console.log('公開ページボタンクリック');
-            window.open('../index.html', '_blank');
-        });
-        console.log('公開ページボタン: OK');
-    } else {
-        console.error('viewPublicBtn が見つかりません');
-    }
-    
     // 投稿ボタン
     const postBtn = document.getElementById('postBtn');
     if (postBtn) {
