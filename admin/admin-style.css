@@ -431,6 +431,53 @@
     opacity: 0.8;
 }
 
+/* カスタム絵文字ボタン群（常時表示） */
+.custom-emoji-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 8px 0 12px 0;
+    padding: 8px;
+    background: var(--theme-bg);
+    border-radius: 8px;
+    min-height: 40px;
+}
+
+.custom-emoji-buttons:empty {
+    display: none;
+}
+
+.custom-emoji-btn {
+    background: var(--theme-card-bg);
+    border: 1px solid var(--theme-border);
+    border-radius: 6px;
+    padding: 6px 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.85rem;
+}
+
+.custom-emoji-btn:hover {
+    background: var(--theme-primary);
+    color: white;
+    border-color: var(--theme-primary);
+    transform: translateY(-1px);
+}
+
+.custom-emoji-btn img {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+}
+
+.custom-emoji-btn-name {
+    color: var(--theme-text-light);
+    font-size: 0.75rem;
+}
+
 /* 絵文字パネル（投稿フォーム直下・展開式） */
 .emoji-panel {
     background: var(--theme-card-bg);

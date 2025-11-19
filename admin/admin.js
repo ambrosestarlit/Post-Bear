@@ -755,36 +755,19 @@ function setupEventListeners() {
         console.log('設定ボタン: OK');
     }
     
-    // 絵文字パレットボタン
+    // 絵文字パレットボタン（管理用モーダルを開く）
     const emojiPaletteBtn = document.getElementById('emojiPaletteBtn');
-    const emojiPanel = document.getElementById('emojiPanel');
-    const closeEmojiPanel = document.getElementById('closeEmojiPanel');
     
-    if (emojiPaletteBtn && emojiPanel) {
+    if (emojiPaletteBtn) {
         emojiPaletteBtn.addEventListener('click', () => {
-            console.log('絵文字パレットボタンクリック');
-            // パネルの表示切り替え
-            if (emojiPanel.style.display === 'none' || emojiPanel.style.display === '') {
-                emojiPanel.style.display = 'block';
-                // 絵文字を再描画
-                if (typeof renderEmojiPalette === 'function') {
-                    renderEmojiPalette();
-                }
-                if (typeof renderEmojiList === 'function') {
-                    renderEmojiList();
-                }
-            } else {
-                emojiPanel.style.display = 'none';
+            console.log('絵文字管理モーダルを開く');
+            openModal('emojiManageModal');
+            // 絵文字リストを再描画
+            if (typeof renderEmojiList === 'function') {
+                renderEmojiList();
             }
         });
         console.log('絵文字パレットボタン: OK');
-    }
-    
-    // 絵文字パネルを閉じる
-    if (closeEmojiPanel) {
-        closeEmojiPanel.addEventListener('click', () => {
-            emojiPanel.style.display = 'none';
-        });
     }
     
     // フィルタークリア

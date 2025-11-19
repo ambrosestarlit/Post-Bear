@@ -13,6 +13,7 @@ async function loadCustomEmojis() {
             const data = await response.json();
             customEmojis = data.emojis || [];
             renderEmojiPalette();
+            renderCustomEmojiButtons(); // 常時表示ボタンも更新
         }
     } catch (error) {
         console.log('カスタム絵文字が見つかりません');
@@ -114,6 +115,7 @@ async function addCustomEmoji() {
             // UI更新
             renderEmojiPalette();
             renderEmojiList();
+            renderCustomEmojiButtons(); // 常時表示ボタンも更新
             
             // フォームをクリア
             fileInput.value = '';
@@ -135,6 +137,7 @@ async function deleteCustomEmoji(name) {
     
     renderEmojiPalette();
     renderEmojiList();
+    renderCustomEmojiButtons(); // 常時表示ボタンも更新
     
     showMessage(`絵文字「:${name}:」を削除しました`, 'success');
 }
@@ -238,6 +241,43 @@ function replaceEmojisInText(text) {
     return text;
 }
 
+// カスタム絵文字ボタン群を描画（投稿フォーム上部・常時表示）
+function renderCustomEmojiButtons() {
+    const container = document.getElementById('customEmojiButtons');
+    if (!container) return;
+    
+    if (customEmojis.length === 0) {
+        container.innerHTML = '';
+        return;
+    }
+    
+    container.innerHTML = customEmojis.map(emoji => `
+        <button class="custom-emoji-btn" 
+                data-emoji-code=":${emoji.name}:"
+                title=":${emoji.name}:">
+            <img src="${emoji.data}" alt=":${emoji.name}:">
+            <span class="custom-emoji-btn-name">:${emoji.name}:</span>
+        </button>
+    `).join('');
+    
+    // ボタンクリックでテキストエリアに挿入
+    container.querySelectorAll('.custom-emoji-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const code = btn.dataset.emojiCode;
+            const textarea = document.getElementById('postText');
+            if (textarea) {
+                const start = textarea.selectionStart;
+                const end = textarea.selectionEnd;
+                const text = textarea.value;
+                
+                textarea.value = text.substring(0, start) + code + text.substring(end);
+                textarea.focus();
+                textarea.selectionStart = textarea.selectionEnd = start + code.length;
+            }
+        });
+    });
+}
+
 // 初期化時にカスタム絵文字をロード
 document.addEventListener('DOMContentLoaded', () => {
     // ローカルストレージから読み込み
@@ -246,6 +286,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const data = JSON.parse(saved);
             customEmojis = data.emojis || [];
+            renderCustomEmojiButtons(); // 常時表示ボタンを描画
         } catch (error) {
             console.error('カスタム絵文字の読み込みエラー:', error);
         }
