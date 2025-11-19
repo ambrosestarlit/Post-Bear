@@ -13,6 +13,8 @@ let githubConfig = {
 // 同期キュー
 let syncQueue = [];
 let isSyncing = false;
+let syncRetryCount = 0;
+const MAX_RETRY = 3;
 
 // リアクションの種類
 const REACTIONS = [
@@ -269,33 +271,55 @@ async function processSyncQueue() {
         const success = await pushToGithub();
         
         if (success) {
-            // 成功したらキューから削除し、syncedフラグを立てる
-            const syncedId = syncQueue.shift();
-            const post = posts.find(p => p.id === syncedId);
-            if (post) {
-                post.synced = true;
-            }
+            // 成功したらキュー全体をクリアしてリトライカウントをリセット
+            syncQueue = [];
+            syncRetryCount = 0;
+            
+            // 全ての投稿にsyncedフラグを立てる
+            posts.forEach(post => {
+                if (!post.synced) {
+                    post.synced = true;
+                }
+            });
             saveLocalPosts();
             
-            // isSyncingをfalseにしてから次の処理
             isSyncing = false;
             updateSyncStatus();
             
-            // 次のキューがあれば処理
-            if (syncQueue.length > 0) {
-                setTimeout(() => processSyncQueue(), 1000); // 1秒待ってから次
-            }
         } else {
-            // 失敗したら5秒後にリトライ
-            isSyncing = false;
-            updateSyncStatus();
-            setTimeout(() => processSyncQueue(), 5000);
+            // 失敗時
+            syncRetryCount++;
+            
+            if (syncRetryCount >= MAX_RETRY) {
+                // 最大リトライ回数に達したらキューをクリア
+                console.warn('同期の最大リトライ回数に達しました。キューをクリアします。');
+                syncQueue = [];
+                syncRetryCount = 0;
+                isSyncing = false;
+                updateSyncStatus();
+                showMessage('同期に失敗しました。ページを再読み込みしてください。', 'error');
+            } else {
+                // リトライ
+                isSyncing = false;
+                updateSyncStatus();
+                setTimeout(() => processSyncQueue(), 3000);
+            }
         }
     } catch (error) {
         console.error('同期エラー:', error);
-        isSyncing = false;
-        updateSyncStatus();
-        setTimeout(() => processSyncQueue(), 5000);
+        syncRetryCount++;
+        
+        if (syncRetryCount >= MAX_RETRY) {
+            syncQueue = [];
+            syncRetryCount = 0;
+            isSyncing = false;
+            updateSyncStatus();
+            showMessage('同期に失敗しました。ページを再読み込みしてください。', 'error');
+        } else {
+            isSyncing = false;
+            updateSyncStatus();
+            setTimeout(() => processSyncQueue(), 3000);
+        }
     }
 }
 
