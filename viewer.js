@@ -14,6 +14,15 @@ const REACTIONS = [
     { emoji: 'wakaru', name: 'わかる', image: 'stamps/wakaru.png' }
 ];
 
+// センシティブタグの定義
+const SENSITIVE_TAGS = ['おこごと', 'おとな向け', '不変少年+'];
+
+// ===== センシティブコンテンツ判定 =====
+function hasSensitiveContent(post) {
+    if (!post.hashtags) return false;
+    return post.hashtags.some(tag => SENSITIVE_TAGS.includes(tag));
+}
+
 // ===== 初期化 =====
 document.addEventListener('DOMContentLoaded', () => {
     loadSettings();
@@ -53,9 +62,13 @@ function renderTimeline() {
     let filteredPosts = posts;
     
     if (currentFilter) {
+        // フィルター指定時はセンシティブコンテンツも含めて表示
         filteredPosts = posts.filter(post => 
             post.hashtags && post.hashtags.includes(currentFilter)
         );
+    } else {
+        // デフォルト表示時はセンシティブコンテンツを除外
+        filteredPosts = posts.filter(post => !hasSensitiveContent(post));
     }
     
     if (filteredPosts.length === 0) {
