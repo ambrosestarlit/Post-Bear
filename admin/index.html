@@ -77,6 +77,36 @@
             </div>
         </div>
 
+        <!-- カスタム絵文字パネル（投稿フォーム直下・展開式） -->
+        <div id="emojiPanel" class="emoji-panel" style="display: none;">
+            <div class="emoji-panel-header">
+                <h3>🎨 カスタム絵文字</h3>
+                <button id="closeEmojiPanel" class="close-emoji-panel">&times;</button>
+            </div>
+            
+            <!-- 絵文字追加フォーム -->
+            <div class="emoji-upload-form">
+                <h4>絵文字を追加</h4>
+                <input type="file" id="emojiFile" accept="image/*" style="margin-bottom: 8px; width: 100%;">
+                <input type="text" id="emojiName" placeholder="絵文字名（半角英数字とアンダースコアのみ）" class="setting-input" style="margin-bottom: 8px;">
+                <button onclick="addCustomEmoji()" class="btn-primary full-width">絵文字を追加</button>
+                <p style="font-size: 0.85rem; color: var(--theme-text-light); margin-top: 8px;">
+                    📌 画像は24x24pxに自動リサイズされます<br>
+                    📌 投稿時は「:絵文字名:」で挿入できます<br>
+                    📌 ファイルサイズは500KB以下にしてください
+                </p>
+            </div>
+            
+            <!-- 絵文字一覧と管理 -->
+            <div id="emojiList" class="emoji-list-container" style="margin: 20px 0;"></div>
+            
+            <!-- 絵文字パレット（挿入用） -->
+            <div class="emoji-insert-section">
+                <h4>絵文字を挿入</h4>
+                <div id="emojiPalette" class="emoji-palette"></div>
+            </div>
+        </div>
+
         <!-- タイムライン -->
         <div id="timeline" class="timeline"></div>
 
@@ -286,39 +316,6 @@
                     </div>
                     
                     <!-- カスタム絵文字管理 -->
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- 絵文字パレットモーダル -->
-        <div id="emojiPaletteModal" class="modal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h2>🎨 カスタム絵文字</h2>
-                    <button class="close-btn">&times;</button>
-                </div>
-                <div class="modal-body">
-                    <!-- 絵文字追加フォーム -->
-                    <div class="emoji-upload-form" style="margin-bottom: 20px; padding: 15px; background: var(--theme-bg); border-radius: 8px;">
-                        <h3 style="margin: 0 0 12px 0; font-size: 1rem;">絵文字を追加</h3>
-                        <input type="file" id="emojiFile" accept="image/*" style="margin-bottom: 8px; width: 100%;">
-                        <input type="text" id="emojiName" placeholder="絵文字名（半角英数字とアンダースコアのみ）" class="setting-input" style="margin-bottom: 8px;">
-                        <button onclick="addCustomEmoji()" class="btn-primary full-width">絵文字を追加</button>
-                        <p style="font-size: 0.85rem; color: var(--theme-text-light); margin-top: 8px;">
-                            📌 画像は24x24pxに自動リサイズされます<br>
-                            📌 投稿時は「:絵文字名:」で挿入できます<br>
-                            📌 ファイルサイズは500KB以下にしてください
-                        </p>
-                    </div>
-                    
-                    <!-- 絵文字一覧と管理 -->
-                    <div id="emojiList" class="emoji-list-container" style="margin-bottom: 20px;"></div>
-                    
-                    <!-- 絵文字パレット（挿入用） -->
-                    <div style="border-top: 1px solid var(--theme-border); padding-top: 20px;">
-                        <h3 style="margin: 0 0 12px 0; font-size: 1rem;">絵文字を挿入</h3>
-                        <div id="emojiPalette" class="emoji-palette"></div>
                     </div>
                 </div>
             </div>

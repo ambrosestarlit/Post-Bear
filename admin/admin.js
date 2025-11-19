@@ -491,6 +491,10 @@ function linkifyText(text) {
     text = text.replace(/#([^\s#]+)/g, '<span class="hashtag">#$1</span>');
     // 【リアクション】をリアクションボタン画像に置き換え
     text = text.replace(/【リアクション】/g, '<img src="../reaction-btn.png" alt="リアクション" style="width: 120px; height: auto; vertical-align: middle;">');
+    // カスタム絵文字を置換
+    if (typeof replaceEmojisInText === 'function') {
+        text = replaceEmojisInText(text);
+    }
     return text;
 }
 
@@ -753,15 +757,34 @@ function setupEventListeners() {
     
     // 絵文字パレットボタン
     const emojiPaletteBtn = document.getElementById('emojiPaletteBtn');
-    if (emojiPaletteBtn) {
+    const emojiPanel = document.getElementById('emojiPanel');
+    const closeEmojiPanel = document.getElementById('closeEmojiPanel');
+    
+    if (emojiPaletteBtn && emojiPanel) {
         emojiPaletteBtn.addEventListener('click', () => {
             console.log('絵文字パレットボタンクリック');
-            openModal('emojiPaletteModal');
-            if (typeof renderEmojiPalette === 'function') {
-                renderEmojiPalette();
+            // パネルの表示切り替え
+            if (emojiPanel.style.display === 'none' || emojiPanel.style.display === '') {
+                emojiPanel.style.display = 'block';
+                // 絵文字を再描画
+                if (typeof renderEmojiPalette === 'function') {
+                    renderEmojiPalette();
+                }
+                if (typeof renderEmojiList === 'function') {
+                    renderEmojiList();
+                }
+            } else {
+                emojiPanel.style.display = 'none';
             }
         });
         console.log('絵文字パレットボタン: OK');
+    }
+    
+    // 絵文字パネルを閉じる
+    if (closeEmojiPanel) {
+        closeEmojiPanel.addEventListener('click', () => {
+            emojiPanel.style.display = 'none';
+        });
     }
     
     // フィルタークリア

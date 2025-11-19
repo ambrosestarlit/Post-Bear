@@ -431,3 +431,74 @@
     opacity: 0.8;
 }
 
+/* 絵文字パネル（投稿フォーム直下・展開式） */
+.emoji-panel {
+    background: var(--theme-card-bg);
+    border: 1px solid var(--theme-border);
+    border-radius: 12px;
+    padding: 20px;
+    margin: 16px auto;
+    max-width: 800px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.emoji-panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid var(--theme-border);
+}
+
+.emoji-panel-header h3 {
+    margin: 0;
+    font-size: 1.3rem;
+    color: var(--theme-primary);
+}
+
+.close-emoji-panel {
+    background: none;
+    border: none;
+    font-size: 2rem;
+    color: var(--theme-text-light);
+    cursor: pointer;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.close-emoji-panel:hover {
+    background: var(--theme-border);
+    color: var(--theme-text);
+}
+
+.emoji-panel .emoji-upload-form {
+    background: var(--theme-bg);
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.emoji-panel .emoji-upload-form h4 {
+    margin: 0 0 12px 0;
+    font-size: 1rem;
+    color: var(--theme-text);
+}
+
+.emoji-insert-section {
+    border-top: 1px solid var(--theme-border);
+    padding-top: 20px;
+}
+
+.emoji-insert-section h4 {
+    margin: 0 0 12px 0;
+    font-size: 1rem;
+    color: var(--theme-text);
+}
+
