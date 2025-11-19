@@ -10,11 +10,9 @@ let githubConfig = {
     token: ''
 };
 
-// 同期キュー
-let syncQueue = [];
-let isSyncing = false;
-let syncRetryCount = 0;
-const MAX_RETRY = 3;
+// 定期同期
+let autoSyncInterval = null;
+let lastSyncTime = 0;
 
 // リアクションの種類
 const REACTIONS = [
@@ -58,6 +56,7 @@ document.addEventListener('DOMContentLoaded', () => {
         loadLocalPosts();
         setupEventListeners();
         checkGithubConnection();
+        startAutoSync(); // 自動同期を開始
         console.log('管理画面初期化完了');
     } catch (error) {
         console.error('初期化エラー:', error);
@@ -289,100 +288,49 @@ async function pushToGithub() {
     }
 }
 
-// ===== 同期キューに追加 =====
-function addToSyncQueue(postId) {
-    syncQueue.push(postId);
-    updateSyncStatus();
-    processSyncQueue();
-}
-
-// ===== 同期キューを処理 =====
-async function processSyncQueue() {
-    // 既に同期中、またはキューが空なら何もしない
-    if (isSyncing || syncQueue.length === 0) return;
-    
-    isSyncing = true;
-    updateSyncStatus();
-    
-    // 少し待ってから処理（連続投稿時の競合を防ぐ）
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    try {
-        // GitHubにpush
-        const success = await pushToGithub();
-        
-        if (success) {
-            // 成功したらキュー全体をクリアしてリトライカウントをリセット
-            syncQueue = [];
-            syncRetryCount = 0;
-            
-            // 全ての投稿にsyncedフラグを立てる
-            posts.forEach(post => {
-                if (!post.synced) {
-                    post.synced = true;
-                }
-            });
-            saveLocalPosts();
-            
-            isSyncing = false;
-            updateSyncStatus();
-            
-        } else {
-            // 失敗時
-            syncRetryCount++;
-            
-            if (syncRetryCount >= MAX_RETRY) {
-                // 最大リトライ回数に達したらキューをクリア
-                console.warn('同期の最大リトライ回数に達しました。キューをクリアします。');
-                syncQueue = [];
-                syncRetryCount = 0;
-                isSyncing = false;
-                updateSyncStatus();
-                showMessage('同期に失敗しました。ページを再読み込みしてください。', 'error');
-            } else {
-                // リトライ
-                isSyncing = false;
-                updateSyncStatus();
-                setTimeout(() => processSyncQueue(), 3000);
-            }
-        }
-    } catch (error) {
-        console.error('同期エラー:', error);
-        syncRetryCount++;
-        
-        if (syncRetryCount >= MAX_RETRY) {
-            syncQueue = [];
-            syncRetryCount = 0;
-            isSyncing = false;
-            updateSyncStatus();
-            showMessage('同期に失敗しました。ページを再読み込みしてください。', 'error');
-        } else {
-            isSyncing = false;
-            updateSyncStatus();
-            setTimeout(() => processSyncQueue(), 3000);
-        }
+// ===== GitHubと同期 =====
+async function syncToGithub() {
+    // 前回の同期から3秒以内なら何もしない（連続呼び出し防止）
+    const now = Date.now();
+    if (now - lastSyncTime < 3000) {
+        console.log('同期スキップ（前回から3秒以内）');
+        return;
     }
-}
-
-// ===== 同期状態を更新 =====
-function updateSyncStatus() {
+    
+    lastSyncTime = now;
+    
     const authStatus = document.getElementById('authStatus');
-    if (!authStatus) return;
-    
-    if (syncQueue.length === 0 && !isSyncing) {
-        // 同期完了
-        if (authStatus.classList.contains('connected')) {
-            authStatus.textContent = `✅ GitHub接続成功: ${githubConfig.repo}`;
-        }
-    } else if (isSyncing) {
-        // 同期中
+    if (authStatus) {
         authStatus.className = 'auth-status loading';
-        authStatus.textContent = `🔄 同期中... ${syncQueue.length > 0 ? `(${syncQueue.length}件待ち)` : ''}`;
-    } else {
-        // 待機中
-        authStatus.className = 'auth-status loading';
-        authStatus.textContent = `⏳ 同期待ち (${syncQueue.length}件)`;
+        authStatus.textContent = '🔄 同期中...';
     }
+    
+    const success = await pushToGithub();
+    
+    if (authStatus) {
+        if (success) {
+            authStatus.className = 'auth-status connected';
+            authStatus.textContent = `✅ GitHub接続成功: ${githubConfig.repo}`;
+        } else {
+            authStatus.className = 'auth-status loading';
+            authStatus.textContent = `⚠️ 同期失敗（次回自動リトライ）`;
+        }
+    }
+}
+
+// ===== 定期同期を開始 =====
+function startAutoSync() {
+    // 既存のインターバルをクリア
+    if (autoSyncInterval) {
+        clearInterval(autoSyncInterval);
+    }
+    
+    // 10秒ごとに同期
+    autoSyncInterval = setInterval(() => {
+        syncToGithub();
+    }, 10000);
+    
+    console.log('自動同期を開始しました（10秒ごと）');
 }
 
 // ===== 投稿処理 =====
@@ -405,8 +353,7 @@ async function createPost() {
             timestamp: new Date().toISOString(),
             images: selectedImages,
             hashtags: hashtags,
-            userIcon: getUserIcon(),
-            synced: false // 同期状態フラグ
+            userIcon: getUserIcon()
         };
         
         // 投稿を先頭に追加
@@ -424,10 +371,10 @@ async function createPost() {
         renderTimeline();
         updateHashtagList();
         
-        showMessage('投稿しました！同期中...', 'success');
+        showMessage('投稿しました！', 'success');
         
-        // バックグラウンドでGitHubに同期
-        addToSyncQueue(post.id);
+        // すぐに同期を試みる
+        syncToGithub();
         
     } catch (error) {
         console.error('投稿エラー:', error);
@@ -454,10 +401,10 @@ function deletePost(postId) {
     renderTimeline();
     updateHashtagList();
     
-    showMessage('削除しました！同期中...', 'success');
+    showMessage('削除しました！', 'success');
     
-    // バックグラウンドでGitHubに同期
-    addToSyncQueue('delete');
+    // すぐに同期を試みる
+    syncToGithub();
 }
 
 // ===== ハッシュタグ抽出 =====
