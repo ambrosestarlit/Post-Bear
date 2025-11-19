@@ -4,7 +4,11 @@ let customEmojis = [];
 // カスタム絵文字をロード
 async function loadCustomEmojis() {
     try {
-        const response = await fetch('../custom-emojis/emojis.json');
+        // 現在のパスから相対パスを判定
+        const isAdminPage = window.location.pathname.includes('/admin/');
+        const emojiPath = isAdminPage ? '../custom-emojis/emojis.json' : 'custom-emojis/emojis.json';
+        
+        const response = await fetch(emojiPath);
         if (response.ok) {
             const data = await response.json();
             customEmojis = data.emojis || [];
