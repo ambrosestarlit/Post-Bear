@@ -315,6 +315,7 @@ function updateSyncStatus() {
         authStatus.textContent = `⏳ 同期待ち (${syncQueue.length}件)`;
     }
     
+    
 }
 
 // ===== 投稿処理 =====
