@@ -255,10 +255,14 @@ function addToSyncQueue(postId) {
 
 // ===== 同期キューを処理 =====
 async function processSyncQueue() {
+    // 既に同期中、またはキューが空なら何もしない
     if (isSyncing || syncQueue.length === 0) return;
     
     isSyncing = true;
     updateSyncStatus();
+    
+    // 少し待ってから処理（連続投稿時の競合を防ぐ）
+    await new Promise(resolve => setTimeout(resolve, 500));
     
     try {
         // GitHubにpush
@@ -272,14 +276,14 @@ async function processSyncQueue() {
                 post.synced = true;
             }
             saveLocalPosts();
+            
+            // isSyncingをfalseにしてから次の処理
+            isSyncing = false;
             updateSyncStatus();
             
             // 次のキューがあれば処理
             if (syncQueue.length > 0) {
-                isSyncing = false;
                 setTimeout(() => processSyncQueue(), 1000); // 1秒待ってから次
-            } else {
-                isSyncing = false;
             }
         } else {
             // 失敗したら5秒後にリトライ
@@ -288,6 +292,12 @@ async function processSyncQueue() {
             setTimeout(() => processSyncQueue(), 5000);
         }
     } catch (error) {
+        console.error('同期エラー:', error);
+        isSyncing = false;
+        updateSyncStatus();
+        setTimeout(() => processSyncQueue(), 5000);
+    }
+} {
         console.error('同期エラー:', error);
         isSyncing = false;
         updateSyncStatus();
