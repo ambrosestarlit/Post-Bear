@@ -720,7 +720,7 @@ h1, h2, h3, h4, h5, h6,
 /* ===== リアクション ===== */
 .post-reactions {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(3, 1fr);
     gap: 10px;
     margin-top: 12px;
     padding-top: 12px;
@@ -729,7 +729,7 @@ h1, h2, h3, h4, h5, h6,
 
 @media (max-width: 480px) {
     .post-reactions {
-        grid-template-columns: repeat(4, 1fr);
+        grid-template-columns: repeat(3, 1fr);
         gap: 8px;
     }
 }
