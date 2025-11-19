@@ -399,9 +399,12 @@ async function syncToGithub(retryCount = 0) {
         }
     }
     
+    // 更新待ちポストがある場合は進行状況を表示
     if (authStatus && retryCount === 0 && unsyncedCount > 0) {
         authStatus.className = 'auth-status loading';
-        authStatus.textContent = `🔄 ${githubPostCount + 1}/${posts.length}件更新中...`;
+        // 現在更新中の番号 / 更新待ちポストの総数
+        const currentSyncNumber = githubPostCount + 1;
+        authStatus.textContent = `🔄 ${currentSyncNumber}/${unsyncedCount}件更新中...`;
     }
     
     const result = await pushToGithub();
@@ -410,26 +413,32 @@ async function syncToGithub(retryCount = 0) {
         if (result.success) {
             // 完全同期したかどうかで処理を分ける
             if (result.isSynced) {
-                // 全件同期完了
-                console.log('✨ 全ての投稿が同期完了しました');
-                authStatus.className = 'auth-status connected';
-                authStatus.textContent = `✅ GitHub接続成功: ${githubConfig.repo}`;
-                
-                // 音を鳴らす
-                if (!syncAudio) {
-                    syncAudio = new Audio('sync-complete.mp3');
-                }
-                syncAudio.play().catch(e => console.log('音声再生エラー:', e));
-                
-                // 2秒後にメッセージを消す
-                setTimeout(() => {
-                    if (authStatus.textContent.startsWith('✅')) {
-                        authStatus.textContent = '';
+                // 未同期がなかった場合（既に同期済みの状態で呼ばれた場合）
+                if (unsyncedCount === 0 && retryCount === 0) {
+                    // 何も表示しない（静かに成功）
+                    console.log('同期済み（変更なし）');
+                } else {
+                    // 未同期があって、今完全同期した場合
+                    console.log('✨ 全ての投稿が同期完了しました');
+                    authStatus.className = 'auth-status connected';
+                    authStatus.textContent = `✅ 同期完了: ${posts.length}件`;
+                    
+                    // 音を鳴らす
+                    if (!syncAudio) {
+                        syncAudio = new Audio('sync-complete.mp3');
                     }
-                }, 2000);
+                    syncAudio.play().catch(e => console.log('音声再生エラー:', e));
+                    
+                    // 2秒後にメッセージを消す
+                    setTimeout(() => {
+                        if (authStatus.textContent.startsWith('✅')) {
+                            authStatus.textContent = '';
+                        }
+                    }, 2000);
+                }
             } else {
-                // まだ未同期がある場合は更新中を継続表示
-                // （次の定期同期で更新される）
+                // まだ未同期がある場合は更新中表示を維持
+                // 次の更新で進行状況が更新される
             }
             
         } else {
