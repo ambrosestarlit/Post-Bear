@@ -365,6 +365,9 @@ async function createPost() {
         showMessage('投稿に失敗しました: ' + error.message, 'error');
     }
 }
+        postBtn.textContent = '投稿';
+    }
+}
 
 // ===== 投稿削除 =====
 function deletePost(postId) {
