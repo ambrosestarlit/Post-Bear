@@ -186,8 +186,8 @@ function loadLocalPosts() {
 // ===== GitHubにpush =====
 async function pushToGithub() {
     if (!githubConfig.repo || !githubConfig.token) {
-        showMessage('GitHub設定が未設定です', 'error');
-        return false;
+        console.error('GitHub設定が未設定です');
+        return { success: false, isSynced: false };
     }
     
     try {
@@ -211,10 +211,10 @@ async function pushToGithub() {
         // JSONをUTF-8でエンコード
         const jsonString = JSON.stringify({ posts }, null, 2);
         
-        // 既存の内容と同じなら成功扱い
+        // 既存の内容と同じなら成功扱い（完全同期済み）
         if (existingContent && JSON.stringify(existingContent) === jsonString) {
             console.log('GitHubの内容は既に最新です');
-            return true;
+            return { success: true, isSynced: true };
         }
         
         const encoder = new TextEncoder();
@@ -245,7 +245,8 @@ async function pushToGithub() {
         if (putResponse.ok) {
             const result = await putResponse.json();
             currentSha = result.content.sha; // 新しいSHAを保存
-            return true;
+            // push成功、完全同期済み
+            return { success: true, isSynced: true };
         } else if (putResponse.status === 409) {
             // 409エラー（競合）の場合、もう一度GitHubの内容を確認
             console.log('409競合エラー。GitHubの内容を再確認します...');
@@ -259,32 +260,30 @@ async function pushToGithub() {
             if (recheckResponse.ok) {
                 const recheckData = await recheckResponse.json();
                 const githubContent = JSON.parse(atob(recheckData.content));
-                const githubJson = JSON.stringify(githubContent, null, 2);
                 
                 console.log('ローカルの投稿数:', posts.length);
                 console.log('GitHubの投稿数:', githubContent.posts ? githubContent.posts.length : 0);
                 
-                // GitHubの内容とローカルの投稿数が同じなら成功扱い
+                // GitHubの内容とローカルの投稿数が同じなら完全同期済み
                 if (githubContent.posts && githubContent.posts.length === posts.length) {
                     console.log('投稿数が一致。同期済みと判断します。');
                     currentSha = recheckData.sha;
-                    return true;
+                    return { success: true, isSynced: true };
                 }
                 
-                // 投稿数が違う場合はログ出力して失敗
+                // 投稿数が違う場合は一部同期
                 console.warn('投稿数が一致しません。ローカル:', posts.length, 'GitHub:', githubContent.posts.length);
+                return { success: false, isSynced: false };
             }
             
-            const error = await putResponse.json();
-            throw new Error(error.message || 'GitHub pushに失敗しました');
+            return { success: false, isSynced: false };
         } else {
-            const error = await putResponse.json();
-            throw new Error(error.message || 'GitHub pushに失敗しました');
+            return { success: false, isSynced: false };
         }
     } catch (error) {
         console.error('GitHub push error:', error);
-        showMessage('GitHubへのpushに失敗: ' + error.message, 'error');
-        return false;
+        // エラーメッセージは表示しない（静かに失敗）
+        return { success: false, isSynced: false };
     }
 }
 
@@ -303,24 +302,51 @@ async function syncToGithub(retryCount = 0) {
     }
     
     const authStatus = document.getElementById('authStatus');
-    if (authStatus && retryCount === 0) {
-        authStatus.className = 'auth-status loading';
-        const unsyncedCount = posts.length;
-        authStatus.textContent = `🔄 ${unsyncedCount}件更新中...`;
+    
+    // 未同期の投稿数を計算（GitHubから最新を取得して比較）
+    let unsyncedCount = 0;
+    if (retryCount === 0) {
+        try {
+            const getResponse = await fetch(`https://api.github.com/repos/${githubConfig.repo}/contents/posts.json?ref=${githubConfig.branch}`, {
+                headers: {
+                    'Authorization': `token ${githubConfig.token}`,
+                    'Accept': 'application/vnd.github.v3+json'
+                }
+            });
+            if (getResponse.ok) {
+                const data = await getResponse.json();
+                const githubContent = JSON.parse(atob(data.content));
+                unsyncedCount = posts.length - (githubContent.posts ? githubContent.posts.length : 0);
+            }
+        } catch (e) {
+            console.log('投稿数取得エラー:', e);
+        }
     }
     
-    const success = await pushToGithub();
+    if (authStatus && retryCount === 0) {
+        authStatus.className = 'auth-status loading';
+        if (unsyncedCount > 0) {
+            authStatus.textContent = `🔄 ${unsyncedCount}件更新中...`;
+        } else {
+            authStatus.textContent = `🔄 同期確認中...`;
+        }
+    }
+    
+    const result = await pushToGithub();
     
     if (authStatus) {
-        if (success) {
+        if (result.success) {
             authStatus.className = 'auth-status connected';
             authStatus.textContent = `✅ GitHub接続成功: ${githubConfig.repo}`;
             
-            // 音を鳴らす
-            if (!syncAudio) {
-                syncAudio = new Audio('sync-complete.mp3');
+            // 完全同期したときだけ音を鳴らす
+            if (result.isSynced) {
+                console.log('✨ 全ての投稿が同期完了しました');
+                if (!syncAudio) {
+                    syncAudio = new Audio('sync-complete.mp3');
+                }
+                syncAudio.play().catch(e => console.log('音声再生エラー:', e));
             }
-            syncAudio.play().catch(e => console.log('音声再生エラー:', e));
             
         } else {
             // 失敗時、最大3回までリトライ（静かに）
