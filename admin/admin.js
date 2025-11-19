@@ -242,6 +242,9 @@ async function createPost() {
     postBtn.textContent = '投稿中...';
     
     try {
+        // 投稿前に必ずGitHubから最新データを取得
+        await syncWithGithub();
+        
         // ハッシュタグ抽出
         const hashtags = extractHashtags(text);
         
@@ -261,21 +264,32 @@ async function createPost() {
         // ローカルに保存
         saveLocalPosts();
         
-        showMessage('投稿しました（まだ保存されていません）', 'success');
+        // GitHubに即座にpush
+        const success = await pushToGithub();
         
-        // フォームリセット
-        document.getElementById('postText').value = '';
-        selectedImages = [];
-        document.getElementById('imagePreview').innerHTML = '';
-        
-        // タイムライン更新
-        renderTimeline();
-        updateHashtagList();
-        
-        // 未保存の変更があることを表示
-        showUnsavedChanges();
+        if (success) {
+            showMessage('投稿しました！', 'success');
+            
+            // フォームリセット
+            document.getElementById('postText').value = '';
+            selectedImages = [];
+            document.getElementById('imagePreview').innerHTML = '';
+            
+            // タイムライン更新
+            renderTimeline();
+            updateHashtagList();
+        } else {
+            // push失敗した場合は投稿を取り消し
+            posts.shift();
+            saveLocalPosts();
+            renderTimeline();
+            showMessage('投稿に失敗しました', 'error');
+        }
     } catch (error) {
         showMessage('投稿に失敗しました: ' + error.message, 'error');
+        posts.shift();
+        saveLocalPosts();
+        renderTimeline();
     } finally {
         postBtn.disabled = false;
         postBtn.textContent = '投稿';
@@ -1081,10 +1095,10 @@ function updateSaveButton() {
     if (saveBtn) {
         if (hasUnsavedChanges) {
             saveBtn.classList.add('has-changes');
-            saveBtn.textContent = '💾 変更を保存 (未保存)';
+            saveBtn.textContent = '💾 削除を保存 (未保存)';
         } else {
             saveBtn.classList.remove('has-changes');
-            saveBtn.textContent = '💾 変更を保存';
+            saveBtn.textContent = '💾 削除を保存';
         }
     }
 }
@@ -1092,7 +1106,7 @@ function updateSaveButton() {
 // ===== 変更を保存（GitHubにpush） =====
 async function saveChanges() {
     if (!hasUnsavedChanges) {
-        showMessage('保存する変更がありません', 'success');
+        showMessage('保存する削除がありません', 'success');
         return;
     }
     
@@ -1108,7 +1122,7 @@ async function saveChanges() {
         const success = await pushToGithub();
         
         if (success) {
-            showMessage('変更を保存しました！', 'success');
+            showMessage('削除を保存しました！', 'success');
             clearUnsavedChanges();
         } else {
             showMessage('保存に失敗しました', 'error');
