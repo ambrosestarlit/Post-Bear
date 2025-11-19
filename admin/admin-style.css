@@ -202,22 +202,26 @@
 .error-message {
     background: #f8d7da;
     color: #721c24;
-    padding: 12px;
+    padding: 12px 20px;
     border-radius: 8px;
-    margin-top: 12px;
+    margin: 12px auto;
     border: 1px solid #f5c6cb;
     font-size: 0.9rem;
+    width: fit-content;
+    max-width: 90%;
 }
 
 /* 成功メッセージ */
 .success-message {
     background: #d4edda;
     color: #155724;
-    padding: 12px;
+    padding: 12px 20px;
     border-radius: 8px;
-    margin-top: 12px;
+    margin: 12px auto;
     border: 1px solid #c3e6cb;
     font-size: 0.9rem;
+    width: fit-content;
+    max-width: 90%;
 }
 
 /* 画像プレビュー（投稿フォーム用） */

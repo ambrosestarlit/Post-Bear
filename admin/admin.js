@@ -337,6 +337,13 @@ async function syncToGithub(retryCount = 0) {
             authStatus.className = 'auth-status connected';
             authStatus.textContent = `✅ GitHub接続成功: ${githubConfig.repo}`;
             
+            // 2秒後に成功メッセージを消す
+            setTimeout(() => {
+                if (authStatus.textContent.startsWith('✅')) {
+                    authStatus.textContent = '';
+                }
+            }, 2000);
+            
             // 完全同期したときだけ音を鳴らす
             if (result.isSynced) {
                 console.log('✨ 全ての投稿が同期完了しました');
@@ -358,8 +365,7 @@ async function syncToGithub(retryCount = 0) {
                 // 最大リトライ後も静かに次回を待つ
                 console.log('同期失敗。次回の定期同期で再試行します。');
                 if (authStatus) {
-                    authStatus.className = 'auth-status connected';
-                    authStatus.textContent = `✅ GitHub接続成功: ${githubConfig.repo}`;
+                    authStatus.textContent = '';
                 }
             }
         }
@@ -772,9 +778,10 @@ function showMessage(message, type) {
     const timeline = document.getElementById('timeline');
     timeline.parentElement.insertBefore(messageEl, timeline);
     
+    // 2秒で消す
     setTimeout(() => {
         messageEl.remove();
-    }, 5000);
+    }, 2000);
 }
 
 // ===== イベントリスナー設定 =====
