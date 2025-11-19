@@ -425,11 +425,13 @@ h1, h2, h3, h4, h5, h6,
     border: 2px solid transparent;
     border-radius: 12px;
     font-size: 0.9rem;
-    font-weight: bold;
+    font-weight: normal; /* 太字を削除 */
     cursor: pointer;
     transition: all 0.3s;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
     font-family: inherit;
+    white-space: nowrap; /* 改行を防ぐ */
+    min-width: 0; /* 幅制限を削除 */
 }
 
 .top-tag-btn:hover {
@@ -443,26 +445,18 @@ h1, h2, h3, h4, h5, h6,
 }
 
 .refresh-btn {
-    padding: 12px 20px;
+    padding: 10px 16px; /* パディングを統一 */
     background: #CD853F; /* 濃いめの色 */
     color: white;
     border: 2px solid transparent;
     border-radius: 12px;
-    font-size: 1rem;
-    font-weight: bold;
+    font-size: 0.9rem; /* フォントサイズを統一 */
+    font-weight: normal; /* 太字を削除 */
     cursor: pointer;
     transition: all 0.3s;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.refresh-btn:hover {
-    background: #B8860B;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-}
-
-.refresh-btn:active {
-    transform: translateY(0);
+    white-space: nowrap; /* 改行を防ぐ */
+    min-width: 0; /* 幅制限を削除 */
 }
 
 /* ===== 更新ボタン ===== */
@@ -1011,7 +1005,7 @@ code {
 
 .tag-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
     gap: 10px;
 }
 
@@ -1020,9 +1014,10 @@ code {
     border-radius: 12px;
     cursor: pointer;
     text-align: center;
-    font-weight: bold;
+    font-weight: normal; /* 太字を削除 */
     transition: all 0.3s;
     border: 2px solid transparent;
+    white-space: nowrap; /* 改行を防ぐ */
 }
 
 .hashtag-item.default-tag {
