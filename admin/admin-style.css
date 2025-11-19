@@ -21,6 +21,8 @@
     font-size: 0.9rem;
     color: var(--theme-text);
     font-family: inherit;
+    font-weight: normal; /* 太字を削除 */
+    white-space: nowrap; /* 改行を防ぐ */
 }
 
 .tag-btn:hover {
