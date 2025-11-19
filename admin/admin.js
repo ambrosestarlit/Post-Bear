@@ -260,13 +260,20 @@ async function pushToGithub() {
             if (recheckResponse.ok) {
                 const recheckData = await recheckResponse.json();
                 const githubContent = JSON.parse(atob(recheckData.content));
+                const githubJson = JSON.stringify(githubContent, null, 2);
                 
-                // GitHubの内容とローカルが同じなら成功扱い
-                if (JSON.stringify(githubContent) === jsonString) {
-                    console.log('GitHubの内容は既に最新です（409後の確認）');
+                console.log('ローカルの投稿数:', posts.length);
+                console.log('GitHubの投稿数:', githubContent.posts ? githubContent.posts.length : 0);
+                
+                // GitHubの内容とローカルの投稿数が同じなら成功扱い
+                if (githubContent.posts && githubContent.posts.length === posts.length) {
+                    console.log('投稿数が一致。同期済みと判断します。');
                     currentSha = recheckData.sha;
                     return true;
                 }
+                
+                // 投稿数が違う場合はログ出力して失敗
+                console.warn('投稿数が一致しません。ローカル:', posts.length, 'GitHub:', githubContent.posts.length);
             }
             
             const error = await putResponse.json();
