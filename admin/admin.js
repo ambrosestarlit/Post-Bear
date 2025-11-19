@@ -242,9 +242,6 @@ async function createPost() {
     postBtn.textContent = '投稿中...';
     
     try {
-        // 投稿前に必ずGitHubから最新データを取得
-        await syncWithGithub();
-        
         // ハッシュタグ抽出
         const hashtags = extractHashtags(text);
         
@@ -278,6 +275,9 @@ async function createPost() {
             // タイムライン更新
             renderTimeline();
             updateHashtagList();
+            
+            // 投稿は即座に保存されるので未保存フラグをクリア
+            clearUnsavedChanges();
         } else {
             // push失敗した場合は投稿を取り消し
             posts.shift();
@@ -286,7 +286,9 @@ async function createPost() {
             showMessage('投稿に失敗しました', 'error');
         }
     } catch (error) {
+        console.error('投稿エラー:', error);
         showMessage('投稿に失敗しました: ' + error.message, 'error');
+        // エラー時も投稿を取り消し
         posts.shift();
         saveLocalPosts();
         renderTimeline();
@@ -978,11 +980,16 @@ async function updateAllPostIcons(newIconData) {
         // ローカルに保存
         saveLocalPosts();
         
-        // タイムライン更新
-        renderTimeline();
+        // GitHubに即座にpush（アイコン変更も即座に反映）
+        const success = await pushToGithub();
         
-        // 未保存の変更があることを表示
-        showUnsavedChanges();
+        if (success) {
+            // タイムライン更新
+            renderTimeline();
+            showMessage('アイコンを更新しました！', 'success');
+        } else {
+            showMessage('アイコン更新に失敗しました', 'error');
+        }
     }
 }
 
