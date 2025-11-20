@@ -107,7 +107,7 @@ body {
     background-position: center;
     background-attachment: fixed;
     background-repeat: no-repeat;
-    padding-top: calc(64px + var(--safe-area-top));
+    padding-top: calc(64px + var(--safe-area-top)); /* ヘッダーの高さ分確保 */
     padding-bottom: var(--safe-area-bottom);
 }
 
@@ -155,6 +155,7 @@ header {
     right: 0;
     z-index: 1000;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    height: 64px; /* ヘッダーの高さを固定 */
 }
 
 .header-content {
@@ -163,6 +164,7 @@ header {
     align-items: center;
     max-width: 600px;
     margin: 0 auto;
+    height: 100%; /* ヘッダーの高さいっぱいに配置 */
 }
 
 header h1 {
@@ -372,37 +374,7 @@ h1, h2, h3, h4, h5, h6,
     max-width: 600px;
     margin: 0 auto;
     padding: 16px 12px 20px 12px;
-}
-
-/* ===== 更新ボタン ===== */
-.refresh-button-container {
-    max-width: 600px;
-    margin: 0 auto;
-    padding: 12px 16px;
-}
-
-.refresh-btn {
-    width: 100%;
-    padding: 12px 20px;
-    background: var(--theme-primary);
-    color: white;
-    border: none;
-    border-radius: 12px;
-    font-size: 1rem;
-    font-weight: bold;
-    cursor: pointer;
-    transition: all 0.3s;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.refresh-btn:hover {
-    background: var(--theme-hover);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-}
-
-.refresh-btn:active {
-    transform: translateY(0);
+    margin-top: 90px; /* タグボタンエリアの高さ分下げる */
 }
 
 /* ===== トップページタグボタン ===== */
@@ -410,6 +382,13 @@ h1, h2, h3, h4, h5, h6,
     max-width: 600px;
     margin: 0 auto;
     padding: 12px 16px;
+    position: fixed; /* 固定配置 */
+    top: 64px; /* ヘッダーの高さ分下に配置 */
+    left: 0;
+    right: 0;
+    background-color: var(--theme-bg); /* 背景色を追加 */
+    z-index: 999; /* ヘッダーより下だが他の要素より上 */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); /* 軽い影を追加 */
 }
 
 .tag-buttons-grid {
@@ -440,44 +419,26 @@ h1, h2, h3, h4, h5, h6,
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-.top-tag-btn:active {
+.top-tag-btn:active,
+.top-tag-btn.active {
+    background: #CD853F;
+    color: white;
     transform: translateY(0);
 }
 
 .refresh-btn {
     padding: 10px 16px; /* パディングを統一 */
-    background: #CD853F; /* 濃いめの色 */
+    background: var(--theme-primary); /* テーマカラーを使用 */
     color: white;
     border: 2px solid transparent;
     border-radius: 12px;
     font-size: 0.9rem; /* フォントサイズを統一 */
-    font-weight: normal; /* 太字を削除 */
+    font-weight: bold; /* 更新ボタンは太字 */
     cursor: pointer;
     transition: all 0.3s;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     white-space: nowrap; /* 改行を防ぐ */
     min-width: 0; /* 幅制限を削除 */
-}
-
-/* ===== 更新ボタン ===== */
-.refresh-button-container {
-    max-width: 600px;
-    margin: 0 auto;
-    padding: 16px;
-    text-align: center;
-}
-
-.refresh-btn {
-    background: var(--theme-primary);
-    color: white;
-    border: none;
-    padding: 12px 24px;
-    border-radius: 24px;
-    font-size: 1rem;
-    font-weight: bold;
-    cursor: pointer;
-    transition: all 0.3s;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
     font-family: inherit;
 }
 
@@ -1298,6 +1259,37 @@ code {
 
 /* ===== レスポンシブ ===== */
 @media (max-width: 480px) {
+    header {
+        height: 56px; /* モバイルではヘッダーを少し小さく */
+    }
+    
+    .app-logo {
+        height: 32px;
+    }
+    
+    body {
+        padding-top: calc(56px + var(--safe-area-top));
+    }
+    
+    .top-buttons-container {
+        top: 56px; /* ヘッダーの高さに合わせる */
+        padding: 10px 12px;
+    }
+    
+    .tag-buttons-grid {
+        gap: 8px;
+    }
+    
+    .top-tag-btn,
+    .refresh-btn {
+        padding: 8px 12px;
+        font-size: 0.85rem;
+    }
+    
+    .timeline {
+        margin-top: 80px; /* タグボタンエリアの高さに合わせて調整 */
+    }
+    
     .post-form-container {
         margin: 12px;
         padding: 12px;

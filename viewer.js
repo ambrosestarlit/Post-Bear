@@ -291,30 +291,14 @@ function filterByHashtag(hashtag) {
     currentFilter = hashtag;
     renderTimeline();
     
-    // ヘッダーにフィルター表示
-    const header = document.querySelector('.header-content');
-    let filterBadge = header.querySelector('.filter-badge');
-    
-    if (!filterBadge) {
-        filterBadge = document.createElement('div');
-        filterBadge.className = 'filter-badge';
-        header.appendChild(filterBadge);
-    }
-    
-    filterBadge.innerHTML = `
-        #${hashtag}
-        <button onclick="clearFilter()" style="margin-left: 8px; background: none; border: none; color: white; cursor: pointer; font-size: 1.2rem;">×</button>
-    `;
-    filterBadge.style.cssText = `
-        display: inline-flex;
-        align-items: center;
-        background: rgba(255, 255, 255, 0.3);
-        padding: 4px 12px;
-        border-radius: 20px;
-        color: white;
-        font-size: 0.9rem;
-        margin-left: 12px;
-    `;
+    // タグボタンのアクティブ状態を更新
+    document.querySelectorAll('.top-tag-btn').forEach(btn => {
+        if (btn.dataset.tag === hashtag) {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
+        }
+    });
 }
 
 // ===== フィルタークリア =====
@@ -322,17 +306,18 @@ function clearFilter() {
     currentFilter = null;
     renderTimeline();
     
-    const filterBadge = document.querySelector('.filter-badge');
-    if (filterBadge) {
-        filterBadge.remove();
-    }
+    // タグボタンのアクティブ状態をクリア
+    document.querySelectorAll('.top-tag-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
 }
 
 // ===== イベントリスナー設定 =====
 function setupEventListeners() {
     // 更新ボタン
     document.getElementById('refreshBtn').addEventListener('click', () => {
-        location.reload();
+        clearFilter(); // フィルターをクリア
+        loadPosts(); // 投稿を再読み込み
     });
     
     // トップページのタグボタン
