@@ -233,78 +233,9 @@ h1, h2, h3, h4, h5, h6,
     max-width: 600px;
     margin: 16px auto;
     padding: 0 16px;
-}
-
-.post-form {
-    background: var(--theme-card);
-    border-radius: 16px;
-    padding: 20px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    border: 1px solid var(--theme-border);
-}
-
-.input-section {
-    margin-bottom: 16px;
-}
-
-.input-label {
-    display: block;
-    font-weight: bold;
-    color: var(--theme-text);
-    margin-bottom: 6px;
-    font-size: 0.9rem;
-}
-
-.input-section textarea {
-    width: 100%;
-    border: 1px solid var(--theme-border);
-    border-radius: 12px;
-    padding: 12px;
-    font-size: 0.95rem;
-    resize: vertical;
-    font-family: inherit;
-    background: white;
-    color: var(--theme-text);
-    min-height: 60px;
-}
-
-.input-section textarea:focus {
-    outline: none;
-    border-color: var(--theme-primary);
-    box-shadow: 0 0 0 3px rgba(193, 154, 107, 0.1);
-}
-
-.input-section textarea::placeholder {
-    color: var(--theme-text-light);
-    opacity: 0.6;
-}
-
-.form-actions {
     display: flex;
-    justify-content: flex-end;
-    margin-top: 16px;
-}
-
-.post-btn {
-    background: var(--theme-primary);
-    color: white;
-    border: none;
-    padding: 12px 32px;
-    border-radius: 24px;
-    font-size: 1rem;
-    font-weight: bold;
-    cursor: pointer;
-    transition: all 0.3s;
-}
-
-.post-btn:hover {
-    background: var(--theme-hover);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-}
-
-.post-btn:active {
-    transform: translateY(0);
+    gap: 12px;
+    align-items: flex-start;
 }
 
 .user-icon-area {
@@ -443,7 +374,6 @@ h1, h2, h3, h4, h5, h6,
     margin: 0 auto;
     padding: 16px 12px 20px 12px;
     margin-top: 90px; /* タグボタンエリアの高さ分下げる */
-    padding-top: 0; /* 投稿フォームがあるので、追加のパディングは不要 */
 }
 
 /* ===== トップページタグボタン ===== */
@@ -1381,21 +1311,7 @@ code {
     
     .post-form-container {
         margin: 12px;
-        padding: 0 12px;
-    }
-    
-    .post-form {
-        padding: 16px;
-    }
-    
-    .input-section textarea {
-        font-size: 0.9rem;
-        padding: 10px;
-    }
-    
-    .post-btn {
-        padding: 10px 24px;
-        font-size: 0.95rem;
+        padding: 12px;
     }
     
     .user-icon {
@@ -1440,12 +1356,6 @@ code {
 }
 
 /* ===== 埋め込みコンテンツ用スタイル ===== */
-/* 販売ページ注意書き */
-.post-text p {
-    margin: 8px 0;
-    line-height: 1.6;
-}
-
 /* 投稿内の画像リンク */
 .post-text a img {
     max-width: 100%;

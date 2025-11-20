@@ -52,7 +52,21 @@
                 <img id="currentUserIcon" src="" alt="アイコン" class="user-icon">
             </div>
             <div class="post-input-area">
-                <textarea id="postText" placeholder="なにをつぶやく？" rows="3"></textarea>
+                <!-- 3つの入力欄 -->
+                <div class="input-section">
+                    <label class="input-label">販売ページ（<a>タグ）</label>
+                    <textarea id="salesPageInput" placeholder='<a rel="noopener sponsored" href="https://..." target="_blank"><img src="..." /></a>' rows="2"></textarea>
+                </div>
+                
+                <div class="input-section">
+                    <label class="input-label">サンプル（iframe）</label>
+                    <textarea id="sampleInput" placeholder='<iframe width="740" height="215" src="https://..."></iframe>' rows="2"></textarea>
+                </div>
+                
+                <div class="input-section">
+                    <label class="input-label">本文</label>
+                    <textarea id="postText" placeholder="なにをつぶやく？" rows="3"></textarea>
+                </div>
                 
                 <!-- カスタム絵文字ボタン群（常時表示） -->
                 <div id="customEmojiButtons" class="custom-emoji-buttons"></div>

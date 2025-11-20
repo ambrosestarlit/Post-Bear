@@ -1,5 +1,43 @@
 /* ===== 管理画面追加スタイル ===== */
 
+/* 3つの入力欄 */
+.input-section {
+    margin-bottom: 12px;
+}
+
+.input-label {
+    display: block;
+    font-weight: bold;
+    color: var(--theme-text);
+    margin-bottom: 4px;
+    font-size: 0.85rem;
+}
+
+.input-section textarea {
+    width: 100%;
+    border: 1px solid var(--theme-border);
+    border-radius: 8px;
+    padding: 10px;
+    font-size: 0.9rem;
+    resize: vertical;
+    font-family: inherit;
+    background: white;
+    color: var(--theme-text);
+    min-height: 50px;
+}
+
+.input-section textarea:focus {
+    outline: none;
+    border-color: var(--theme-primary);
+    box-shadow: 0 0 0 3px rgba(193, 154, 107, 0.1);
+}
+
+.input-section textarea::placeholder {
+    color: var(--theme-text-light);
+    opacity: 0.6;
+    font-size: 0.85rem;
+}
+
 /* タグ選択ボタン */
 .tag-buttons {
     display: flex;

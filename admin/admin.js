@@ -467,31 +467,53 @@ function startAutoSync() {
         clearInterval(autoSyncInterval);
     }
     
-    // 10秒ごとに同期
+    // 5分（300秒）ごとに同期
     autoSyncInterval = setInterval(() => {
         syncToGithub();
-    }, 10000);
+    }, 300000);
     
-    console.log('自動同期を開始しました（10秒ごと）');
+    console.log('自動同期を開始しました（5分ごと）');
 }
 
 // ===== 投稿処理 =====
 async function createPost() {
-    const text = document.getElementById('postText').value.trim();
+    const salesPageInput = document.getElementById('salesPageInput').value.trim();
+    const sampleInput = document.getElementById('sampleInput').value.trim();
+    const mainText = document.getElementById('postText').value.trim();
     
-    if (!text && selectedImages.length === 0) {
+    // 少なくとも1つの入力が必要
+    if (!salesPageInput && !sampleInput && !mainText && selectedImages.length === 0) {
         showMessage('投稿内容を入力してください', 'error');
         return;
     }
     
     try {
-        // ハッシュタグ抽出
-        const hashtags = extractHashtags(text);
+        // 投稿内容を組み立てる
+        let postContent = '';
+        
+        // 販売ページがある場合
+        if (salesPageInput) {
+            postContent += '<p style="color: #C19A6B; font-weight: bold; margin-bottom: 8px;">※サムネ入りをタップすると販売ページへジャンプします</p>\n';
+            postContent += salesPageInput + '\n\n';
+        }
+        
+        // サンプルを追加
+        if (sampleInput) {
+            postContent += sampleInput + '\n\n';
+        }
+        
+        // 本文を追加
+        if (mainText) {
+            postContent += mainText;
+        }
+        
+        // ハッシュタグ抽出（本文から）
+        const hashtags = extractHashtags(mainText);
         
         // 投稿データ作成
         const post = {
             id: Date.now().toString(),
-            text: text,
+            text: postContent.trim(),
             timestamp: new Date().toISOString(),
             images: selectedImages,
             hashtags: hashtags,
@@ -505,6 +527,8 @@ async function createPost() {
         saveLocalPosts();
         
         // フォームリセット（即座に）
+        document.getElementById('salesPageInput').value = '';
+        document.getElementById('sampleInput').value = '';
         document.getElementById('postText').value = '';
         selectedImages = [];
         document.getElementById('imagePreview').innerHTML = '';
