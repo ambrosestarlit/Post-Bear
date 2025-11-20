@@ -1367,7 +1367,7 @@ code {
     max-width: 100%;
     height: auto;
     border-radius: 8px;
-    margin: 6px 0; /* 上下の間隔を詰める */
+    margin: 2px 0; /* ほぼ間隔なし */
     display: block;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     transition: all 0.3s;
@@ -1382,9 +1382,9 @@ code {
 .post-text iframe {
     max-width: 100%;
     width: 100%;
-    height: 215px; /* 固定の高さ */
+    height: 280px; /* 高さを増やして全体表示 */
     border-radius: 8px;
-    margin: 6px 0; /* 上下の間隔を詰める */
+    margin: 2px 0; /* ほぼ間隔なし */
     display: block;
     border: none;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
@@ -1393,7 +1393,7 @@ code {
 /* レスポンシブ対応 */
 @media (max-width: 480px) {
     .post-text iframe {
-        height: 180px; /* モバイルでは少し小さく */
+        height: 240px;
     }
 }
 
