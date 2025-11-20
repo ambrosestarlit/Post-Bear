@@ -183,6 +183,22 @@ function linkifyText(text) {
     const htmlTags = [];
     let tagIndex = 0;
     
+    // <div>タグを保護（style属性を含む）
+    text = text.replace(/(<div[^>]*>.*?<\/div>)/gi, (match) => {
+        const placeholder = `___HTML_TAG_${tagIndex}___`;
+        htmlTags[tagIndex] = match;
+        tagIndex++;
+        return placeholder;
+    });
+    
+    // <p>タグを保護（style属性を含む）
+    text = text.replace(/(<p[^>]*>.*?<\/p>)/gi, (match) => {
+        const placeholder = `___HTML_TAG_${tagIndex}___`;
+        htmlTags[tagIndex] = match;
+        tagIndex++;
+        return placeholder;
+    });
+    
     // <a>タグと<iframe>タグを一時的に保護
     text = text.replace(/(<a[^>]*>.*?<\/a>)/gi, (match) => {
         const placeholder = `___HTML_TAG_${tagIndex}___`;

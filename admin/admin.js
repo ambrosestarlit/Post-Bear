@@ -493,7 +493,7 @@ async function createPost() {
         
         // 販売ページがある場合
         if (salesPageInput) {
-            postContent += '<p style="color: #C19A6B; font-weight: bold; margin-bottom: 8px;">※サムネ入りをタップすると販売ページへジャンプします</p>\n';
+            postContent += '<div style="background: #FFF5E9; border: 2px solid #C19A6B; border-radius: 12px; padding: 12px; margin-bottom: 12px;"><p style="color: #C19A6B; font-weight: bold; margin: 0;">※サムネイルをタップすると販売ページへジャンプします</p></div>\n';
             postContent += salesPageInput + '\n\n';
         }
         
@@ -727,6 +727,22 @@ function linkifyText(text) {
     // HTMLタグを一時的に保護するためのプレースホルダー配列
     const htmlTags = [];
     let tagIndex = 0;
+    
+    // <div>タグを保護（style属性を含む）
+    text = text.replace(/(<div[^>]*>.*?<\/div>)/gi, (match) => {
+        const placeholder = `___HTML_TAG_${tagIndex}___`;
+        htmlTags[tagIndex] = match;
+        tagIndex++;
+        return placeholder;
+    });
+    
+    // <p>タグを保護（style属性を含む）
+    text = text.replace(/(<p[^>]*>.*?<\/p>)/gi, (match) => {
+        const placeholder = `___HTML_TAG_${tagIndex}___`;
+        htmlTags[tagIndex] = match;
+        tagIndex++;
+        return placeholder;
+    });
     
     // <a>タグと<iframe>タグを一時的に保護
     text = text.replace(/(<a[^>]*>.*?<\/a>)/gi, (match) => {
