@@ -493,7 +493,7 @@ async function createPost() {
         
         // 販売ページがある場合
         if (salesPageInput) {
-            postContent += '<img src="../atention.png" alt="※サムネイルをタップすると販売ページへジャンプします" style="width: 100%; max-width: 600px; display: block; margin: 4px auto 2px;">';
+            postContent += '<img src="images/atention.png" alt="※サムネイルをタップすると販売ページへジャンプします" style="width: 100%; max-width: 600px; display: block; margin: 4px auto 2px;">';
             postContent += salesPageInput;
         }
         
