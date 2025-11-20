@@ -1321,7 +1321,7 @@ code {
     margin-top: 12px;
 }
 
-/* ===== カスタム絵文字（ビューア用） ===== */
+/* ===== カスタム絵文字(ビューア用) ===== */
 .inline-emoji {
     width: 24px;
     height: 24px;
@@ -1335,4 +1335,42 @@ code {
     display: inline-block;
     vertical-align: text-bottom;
 }
+
+/* ===== 埋め込みコンテンツ用スタイル ===== */
+/* 投稿内の画像リンク */
+.post-text a img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    margin: 12px 0;
+    display: block;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s;
+}
+
+.post-text a img:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* iframe埋め込み */
+.post-text iframe {
+    max-width: 100%;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 16 / 10; /* デフォルトのアスペクト比 */
+    border-radius: 8px;
+    margin: 12px 0;
+    display: block;
+    border: none;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 480px) {
+    .post-text iframe {
+        aspect-ratio: 16 / 10;
+    }
+}
+
 

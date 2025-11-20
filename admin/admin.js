@@ -700,6 +700,34 @@ function createPostHTML(post) {
 
 // ===== テキストをリンク化 =====
 function linkifyText(text) {
+    // HTMLタグを一時的に保護するためのプレースホルダー配列
+    const htmlTags = [];
+    let tagIndex = 0;
+    
+    // <a>タグと<iframe>タグを一時的に保護
+    text = text.replace(/(<a[^>]*>.*?<\/a>)/gi, (match) => {
+        const placeholder = `___HTML_TAG_${tagIndex}___`;
+        htmlTags[tagIndex] = match;
+        tagIndex++;
+        return placeholder;
+    });
+    
+    text = text.replace(/(<iframe[^>]*>.*?<\/iframe>)/gi, (match) => {
+        const placeholder = `___HTML_TAG_${tagIndex}___`;
+        htmlTags[tagIndex] = match;
+        tagIndex++;
+        return placeholder;
+    });
+    
+    // 単独の<img>タグも保護
+    text = text.replace(/(<img[^>]*\/?>)/gi, (match) => {
+        const placeholder = `___HTML_TAG_${tagIndex}___`;
+        htmlTags[tagIndex] = match;
+        tagIndex++;
+        return placeholder;
+    });
+    
+    // 既にHTMLタグとして保護されていないURLをリンク化
     text = text.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" class="post-url" target="_blank" rel="noopener">$1</a>');
     text = text.replace(/#([^\s#]+)/g, '<span class="hashtag">#$1</span>');
     // 【リアクション】をリアクションボタン画像に置き換え
@@ -708,6 +736,12 @@ function linkifyText(text) {
     if (typeof replaceEmojisInText === 'function') {
         text = replaceEmojisInText(text);
     }
+    
+    // 保護したHTMLタグを復元
+    for (let i = 0; i < htmlTags.length; i++) {
+        text = text.replace(`___HTML_TAG_${i}___`, htmlTags[i]);
+    }
+    
     return text;
 }
 
