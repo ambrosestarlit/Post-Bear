@@ -1356,12 +1356,18 @@ code {
 }
 
 /* ===== 埋め込みコンテンツ用スタイル ===== */
+/* 販売ページ注意書き */
+.post-text p {
+    margin: 8px 0;
+    line-height: 1.6;
+}
+
 /* 投稿内の画像リンク */
 .post-text a img {
     max-width: 100%;
     height: auto;
     border-radius: 8px;
-    margin: 12px 0;
+    margin: 6px 0; /* 上下の間隔を詰める */
     display: block;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     transition: all 0.3s;
@@ -1376,10 +1382,9 @@ code {
 .post-text iframe {
     max-width: 100%;
     width: 100%;
-    height: auto;
-    aspect-ratio: 16 / 10; /* デフォルトのアスペクト比 */
+    height: 215px; /* 固定の高さ */
     border-radius: 8px;
-    margin: 12px 0;
+    margin: 6px 0; /* 上下の間隔を詰める */
     display: block;
     border: none;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
@@ -1388,7 +1393,7 @@ code {
 /* レスポンシブ対応 */
 @media (max-width: 480px) {
     .post-text iframe {
-        aspect-ratio: 16 / 10;
+        height: 180px; /* モバイルでは少し小さく */
     }
 }
 

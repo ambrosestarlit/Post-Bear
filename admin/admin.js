@@ -493,13 +493,13 @@ async function createPost() {
         
         // 販売ページがある場合
         if (salesPageInput) {
-            postContent += '<div style="background: #FFF5E9; border: 2px solid #C19A6B; border-radius: 12px; padding: 12px; margin-bottom: 12px;"><p style="color: #C19A6B; font-weight: bold; margin: 0;">※サムネイルをタップすると販売ページへジャンプします</p></div>\n';
-            postContent += salesPageInput + '\n\n';
+            postContent += '<div style="background: #FFF5E9; border: 2px solid #C19A6B; border-radius: 12px; padding: 8px 12px; margin-bottom: 6px;"><p style="color: #C19A6B; font-weight: bold; margin: 0; font-size: 0.85rem; line-height: 1.3;">※サムネイルをタップすると販売ページへジャンプします</p></div>\n';
+            postContent += salesPageInput + '\n';
         }
         
         // サンプルを追加
         if (sampleInput) {
-            postContent += sampleInput + '\n\n';
+            postContent += sampleInput + '\n';
         }
         
         // 本文を追加
