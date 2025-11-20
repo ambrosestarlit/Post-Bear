@@ -56,7 +56,7 @@ document.addEventListener('DOMContentLoaded', () => {
         loadLocalPosts();
         setupEventListeners();
         checkGithubConnection();
-        startAutoSync(); // 自動同期を開始
+        // 自動同期は無効化（手動のみ）
         console.log('管理画面初期化完了');
     } catch (error) {
         console.error('初期化エラー:', error);

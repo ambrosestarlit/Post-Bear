@@ -2,6 +2,7 @@
 let posts = [];
 let currentFilter = null;
 let reactionsData = {}; // リアクションデータのキャッシュ
+let autoRefreshInterval = null; // 自動更新用
 
 // リアクションの種類
 const REACTIONS = [
@@ -30,7 +31,24 @@ document.addEventListener('DOMContentLoaded', () => {
     loadSettings();
     loadPosts();
     setupEventListeners();
+    startAutoRefresh(); // 自動更新を開始
 });
+
+// ===== 自動更新開始 =====
+function startAutoRefresh() {
+    // 既存のインターバルをクリア
+    if (autoRefreshInterval) {
+        clearInterval(autoRefreshInterval);
+    }
+    
+    // 5分（300秒）ごとに投稿を再読み込み
+    autoRefreshInterval = setInterval(() => {
+        console.log('自動更新: posts.jsonを再読み込み');
+        loadPosts();
+    }, 300000);
+    
+    console.log('自動更新を開始しました（5分ごと）');
+}
 
 // ===== 投稿データ読み込み =====
 async function loadPosts() {
