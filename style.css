@@ -15,10 +15,6 @@
 
 /* ===== 基本設定 ===== */
 :root {
-    /* セーフエリア */
-    --safe-area-top: env(safe-area-inset-top, 0px);
-    --safe-area-bottom: env(safe-area-inset-bottom, 0px);
-    
     /* チョコレートテーマ */
     --theme-bg: #FFF5E9;
     --theme-primary: #C19A6B;
@@ -31,8 +27,10 @@
     --theme-hover: #B8956A;
     
     /* セーフエリア対応 */
-    --safe-area-top: env(safe-area-inset-top);
-    --safe-area-bottom: env(safe-area-inset-bottom);
+    --safe-area-top: env(safe-area-inset-top, 0px);
+    --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+    --safe-area-left: env(safe-area-inset-left, 0px);
+    --safe-area-right: env(safe-area-inset-right, 0px);
 }
 
 [data-theme="sakura"] {
@@ -149,13 +147,14 @@ header {
     color: white;
     padding: 12px;
     padding-top: calc(12px + var(--safe-area-top));
+    padding-bottom: 12px;
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
     z-index: 1000;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    height: 64px; /* ヘッダーの高さを固定 */
+    /* heightを削除してpaddingで高さを決定 */
 }
 
 .header-content {
@@ -164,7 +163,7 @@ header {
     align-items: center;
     max-width: 600px;
     margin: 0 auto;
-    height: 100%; /* ヘッダーの高さいっぱいに配置 */
+    height: 40px; /* コンテンツ部分の高さを固定 */
 }
 
 header h1 {
@@ -234,9 +233,78 @@ h1, h2, h3, h4, h5, h6,
     max-width: 600px;
     margin: 16px auto;
     padding: 0 16px;
+}
+
+.post-form {
+    background: var(--theme-card);
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border: 1px solid var(--theme-border);
+}
+
+.input-section {
+    margin-bottom: 16px;
+}
+
+.input-label {
+    display: block;
+    font-weight: bold;
+    color: var(--theme-text);
+    margin-bottom: 6px;
+    font-size: 0.9rem;
+}
+
+.input-section textarea {
+    width: 100%;
+    border: 1px solid var(--theme-border);
+    border-radius: 12px;
+    padding: 12px;
+    font-size: 0.95rem;
+    resize: vertical;
+    font-family: inherit;
+    background: white;
+    color: var(--theme-text);
+    min-height: 60px;
+}
+
+.input-section textarea:focus {
+    outline: none;
+    border-color: var(--theme-primary);
+    box-shadow: 0 0 0 3px rgba(193, 154, 107, 0.1);
+}
+
+.input-section textarea::placeholder {
+    color: var(--theme-text-light);
+    opacity: 0.6;
+}
+
+.form-actions {
     display: flex;
-    gap: 12px;
-    align-items: flex-start;
+    justify-content: flex-end;
+    margin-top: 16px;
+}
+
+.post-btn {
+    background: var(--theme-primary);
+    color: white;
+    border: none;
+    padding: 12px 32px;
+    border-radius: 24px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.post-btn:hover {
+    background: var(--theme-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.post-btn:active {
+    transform: translateY(0);
 }
 
 .user-icon-area {
@@ -375,6 +443,7 @@ h1, h2, h3, h4, h5, h6,
     margin: 0 auto;
     padding: 16px 12px 20px 12px;
     margin-top: 90px; /* タグボタンエリアの高さ分下げる */
+    padding-top: 0; /* 投稿フォームがあるので、追加のパディングは不要 */
 }
 
 /* ===== トップページタグボタン ===== */
@@ -383,12 +452,14 @@ h1, h2, h3, h4, h5, h6,
     margin: 0 auto;
     padding: 12px 16px;
     position: fixed; /* 固定配置 */
-    top: 64px; /* ヘッダーの高さ分下に配置 */
+    top: calc(64px + var(--safe-area-top)); /* ヘッダーの高さ + セーフエリア分下に配置 */
     left: 0;
     right: 0;
-    background-color: var(--theme-bg); /* 背景色を追加 */
+    background-color: var(--theme-bg); /* 背景色 */
     z-index: 999; /* ヘッダーより下だが他の要素より上 */
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); /* 軽い影を追加 */
+    border-bottom: 1px solid var(--theme-border); /* 境界線を追加 */
+    /* デバッグ用: ヘッダー高さ64px + パディング24px + セーフエリア = 約88px〜 */
 }
 
 .tag-buttons-grid {
@@ -1260,19 +1331,37 @@ code {
 /* ===== レスポンシブ ===== */
 @media (max-width: 480px) {
     header {
-        height: 56px; /* モバイルではヘッダーを少し小さく */
+        /* heightを削除してpaddingで高さを決定 */
+        padding: 10px 12px;
+        padding-top: calc(10px + var(--safe-area-top));
+        padding-bottom: 10px;
+    }
+    
+    .header-content {
+        height: 32px; /* モバイルではコンテンツを少し小さく */
     }
     
     .app-logo {
-        height: 32px;
+        height: 28px;
+    }
+    
+    .icon-btn {
+        width: 36px;
+        height: 36px;
+        font-size: 1rem;
+    }
+    
+    .btn-icon {
+        width: 28px;
+        height: 28px;
     }
     
     body {
-        padding-top: calc(56px + var(--safe-area-top));
+        padding-top: calc(52px + var(--safe-area-top));
     }
     
     .top-buttons-container {
-        top: 56px; /* ヘッダーの高さに合わせる */
+        top: calc(52px + var(--safe-area-top)); /* ヘッダーの高さ + セーフエリアに合わせる */
         padding: 10px 12px;
     }
     
@@ -1292,7 +1381,21 @@ code {
     
     .post-form-container {
         margin: 12px;
-        padding: 12px;
+        padding: 0 12px;
+    }
+    
+    .post-form {
+        padding: 16px;
+    }
+    
+    .input-section textarea {
+        font-size: 0.9rem;
+        padding: 10px;
+    }
+    
+    .post-btn {
+        padding: 10px 24px;
+        font-size: 0.95rem;
     }
     
     .user-icon {
@@ -1337,6 +1440,12 @@ code {
 }
 
 /* ===== 埋め込みコンテンツ用スタイル ===== */
+/* 販売ページ注意書き */
+.post-text p {
+    margin: 8px 0;
+    line-height: 1.6;
+}
+
 /* 投稿内の画像リンク */
 .post-text a img {
     max-width: 100%;
